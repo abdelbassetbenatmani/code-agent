@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Repo" ALTER COLUMN "userId" SET DATA TYPE TEXT;
