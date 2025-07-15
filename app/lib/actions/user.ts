@@ -68,3 +68,16 @@ export const updateUserProfile = async (
     throw new Error("Failed to update user profile");
   }
 };
+
+export const deleteUserProfile = async (userId: string) => {
+  try {
+     await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return true;
+  } catch (error) {
+    console.error("Error deleting user profile:", error);
+    return false;
+  }
+};
