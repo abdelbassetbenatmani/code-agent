@@ -73,7 +73,6 @@ const CreateProject = ({
       // @ts-expect-error
       const response = await fetchRepos(session?.data?.accessToken || "");
 
-      console.log("Fetched Repos:", response);
 
       setRepos(response);
     } catch (err) {
@@ -103,8 +102,6 @@ const CreateProject = ({
 
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      console.log(selectedRepo, projectName, projectDescription, session);
 
       // get selected repo details
       const selectedRepoDetails = repos.find(

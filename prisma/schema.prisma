@@ -17,6 +17,11 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
+
+    // Optional properties
+  bio              String?
+  socialLinks     String? // JSON stringified array of social links
+  secondaryEmail  String? // Optional secondary email
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -34,6 +39,9 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
+
+
+  
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

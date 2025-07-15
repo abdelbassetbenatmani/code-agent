@@ -10,29 +10,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Command,
-  Home,
-  LogOut,
-  MoreHorizontal,
-  Settings,
-  User,
-} from "lucide-react";
-import { DropdownMenuShortcut } from "@/components/ui/dropdown-menu";
+import { Home, LogOut, MoreHorizontal, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/app/lib/actions/auth";
+import Link from "next/link";
 
 interface UserDropdownProps {
   user: {
-    _id?: string | undefined;
-    _creationTime?: number | undefined;
+    id: string | undefined;
     name?: string | undefined;
     email?: string | undefined;
-    phone?: string | undefined;
-    image?: string | undefined;
-    emailVerificationTime?: number | undefined;
-    phoneVerificationTime?: number | undefined;
-    isAnonymous?: boolean | undefined;
+    image?: string ;
+    bio?: string | null | undefined;
+    socialLinks?: any | null | undefined;
+    secondaryEmail?: string | null | undefined;
   };
 }
 const UserDropdown = ({ user }: UserDropdownProps) => {
@@ -102,31 +93,24 @@ const UserDropdown = ({ user }: UserDropdownProps) => {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem className="py-3 hover:bg-primary/10 rounded-lg transition-all">
-            <User className="mr-3 h-5 w-5 text-primary" />
-            <span className="font-medium">Profile</span>
-            <DropdownMenuShortcut className="hidden sm:inline-flex">
-              ⇧⌘P
-            </DropdownMenuShortcut>
+            <Link className="flex items-center " href={`/dashboard/profile?tab=profile`}>
+              <User className="mr-3 h-5 w-5 text-primary" />
+              <span className="font-medium">Profile</span>
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem className="py-3 hover:bg-primary/10 rounded-lg transition-all">
-            <Settings className="mr-3 h-5 w-5 text-primary" />
-            <span className="font-medium">Account Settings</span>
-            <DropdownMenuShortcut className="hidden sm:inline-flex">
-              ⌘S
-            </DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem className="py-3 hover:bg-primary/10 rounded-lg transition-all">
-            <Command className="mr-3 h-5 w-5 text-primary" />
-            <span className="font-medium">Command Menu</span>
-            <DropdownMenuShortcut className="hidden sm:inline-flex">
-              ⌘K
-            </DropdownMenuShortcut>
+            <Link className="flex items-center " href={`/dashboard/profile?tab=account`}>
+              <Settings className="mr-3 h-5 w-5 text-primary" />
+              <span className="font-medium">Settings</span>
+            </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="py-3 hover:bg-primary/10 rounded-lg transition-all">
-          <Home className="mr-3 h-5 w-5 text-primary" />
-          <span className="font-medium">Home Page</span>
+          <Link className="flex items-center " href={`/dashboard`}>
+            <Home className="mr-3 h-5 w-5 text-primary" />
+            <span className="font-medium">Home Page</span>
+          </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
@@ -135,9 +119,6 @@ const UserDropdown = ({ user }: UserDropdownProps) => {
         >
           <LogOut className="mr-3 h-5 w-5" />
           <span className="font-medium">Log Out</span>
-          <DropdownMenuShortcut className="hidden sm:inline-flex">
-            ⇧⌘Q
-          </DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
