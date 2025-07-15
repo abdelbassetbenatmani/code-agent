@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
-import { updateUserProfile } from "@/app/lib/actions/user";
+import { getUserProfile, updateUserProfile } from "@/app/lib/actions/user";
 import { toast } from "sonner";
 
 interface SocialLink {
@@ -39,18 +39,30 @@ interface SocialLink {
 const Profile = () => {
   const session = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [avatarSrc, setAvatarSrc] = useState<string | null>(
-    session?.data?.user?.image || null
-  );
-  const [displayName, setDisplayName] = useState(
-    session?.data?.user?.name || ""
-  );
+  const [avatarSrc, setAvatarSrc] = useState<string | null>("");
+  const [displayName, setDisplayName] = useState("");
   const [bio, setBio] = useState("");
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([
-    { platform: "GitHub", url: "", icon: <Github className="h-4 w-4" /> },
-    { platform: "Twitter", url: "", icon: <Twitter className="h-4 w-4" /> },
-    { platform: "LinkedIn", url: "", icon: <Linkedin className="h-4 w-4" /> },
-    { platform: "Website", url: "", icon: <Globe className="h-4 w-4" /> },
+    {
+      platform: "GitHub",
+      url: "",
+      icon: <Github className="h-4 w-4" />,
+    },
+    {
+      platform: "Twitter",
+      url: "",
+      icon: <Twitter className="h-4 w-4" />,
+    },
+    {
+      platform: "LinkedIn",
+      url: "",
+      icon: <Linkedin className="h-4 w-4" />,
+    },
+    {
+      platform: "Website",
+      url: "",
+      icon: <Globe className="h-4 w-4" />,
+    },
   ]);
 
   const handleAvatarClick = () => {
@@ -76,12 +88,23 @@ const Profile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Remove the icon property before stringifying
-    const serializableLinks = socialLinks.map(({ platform, url }) => ({ platform, url }));
-    await updateUserProfile(session?.data?.user?.id || "", {
-      socialLinks: JSON.stringify(serializableLinks),
-    });
-    toast("Profile updated successfully!");
+
+    try {
+      // Remove the icon property before submitting
+      const serializableLinks = socialLinks.map(({ platform, url }) => ({
+        platform,
+        url,
+      }));
+
+      await updateUserProfile(session?.data?.user?.id || "", {
+        socialLinks: serializableLinks, // Don't stringify here, let the server action handle it
+      });
+
+      toast("Profile updated successfully!");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
+    }
   };
 
   //   const handleAvatarChange = (newAvatar: string | null) => {
@@ -105,7 +128,62 @@ const Profile = () => {
     toast("Bio updated successfully!");
   };
 
+  useEffect(() => {
+    if (session?.data?.user) {
+      const getUserData = async () => {
+        const userData = await getUserProfile(
+          session?.data?.user?.id as string
+        );
+        setDisplayName(userData.name || "");
+        setBio(userData.bio || "");
+        setAvatarSrc(userData.image || null);
 
+        // Parse social links if available
+        if (userData.socialLinks) {
+          try {
+            // Ensure we're working with a string first
+            const linksStr =
+              typeof userData.socialLinks === "string"
+                ? userData.socialLinks
+                : JSON.stringify(userData.socialLinks);
+
+            // Parse the string into an array
+            const parsedLinks = JSON.parse(linksStr);
+            console.log("Parsed socialLinks:", parsedLinks);
+
+            // Make sure we have an array
+            if (Array.isArray(parsedLinks)) {
+              // Map the parsed links to the format expected by your component
+              const formattedLinks = parsedLinks.map((link) => ({
+                platform: link.platform,
+                url: link.url,
+                icon:
+                  link.platform === "GitHub" ? (
+                    <Github className="h-4 w-4" />
+                  ) : link.platform === "Twitter" ? (
+                    <Twitter className="h-4 w-4" />
+                  ) : link.platform === "LinkedIn" ? (
+                    <Linkedin className="h-4 w-4" />
+                  ) : (
+                    <Globe className="h-4 w-4" />
+                  ),
+              }));
+
+              setSocialLinks(formattedLinks);
+            } else {
+              console.error("socialLinks is not an array:", parsedLinks);
+            }
+          } catch (e) {
+            console.error("Failed to parse socialLinks:", e);
+          }
+        }
+
+        console.log("User Data loaded");
+      };
+
+      getUserData();
+    }
+  }, [session]);
 
   return (
     <div className="container mx-auto py-6 max-w-4xl">

@@ -34,26 +34,33 @@ export const updateUserProfile = async (
   profileData: {
     bio?: string;
     displayName?: string;
-    avatar?: string; // Base64 string or URL of the avatar image
-    socialLinks?: string; // JSON stringified array of social links
-    secondaryEmail?: string; // Optional secondary email
+    avatar?: string;
+    socialLinks?: any;
+    secondaryEmail?: string;
   }
 ) => {
-  // Update user profile logic here
   try {
-    // Assuming you have a Prisma client instance
+    let formattedSocialLinks = profileData.socialLinks;
+
+    // If socialLinks is an array or object, stringify it
+    if (
+      profileData.socialLinks &&
+      typeof profileData.socialLinks !== "string"
+    ) {
+      formattedSocialLinks = JSON.stringify(profileData.socialLinks);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
         name: profileData.displayName || undefined,
         image: profileData.avatar || undefined,
         bio: profileData.bio,
-        socialLinks: profileData.socialLinks
-          ? JSON.stringify(profileData.socialLinks)
-          : null,
-        secondaryEmail: profileData.secondaryEmail || null,
+        socialLinks: formattedSocialLinks,
+        secondaryEmail: profileData.secondaryEmail || undefined,
       },
     });
+
     revalidatePath("/dashboard");
     return updatedUser;
   } catch (error) {
