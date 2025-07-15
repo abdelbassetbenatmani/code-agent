@@ -19,7 +19,6 @@ import {
   Twitter,
   Linkedin,
   Globe,
-  Camera,
   User,
   AtSign,
   FileText,
@@ -29,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
 import { getUserProfile, updateUserProfile } from "@/app/lib/actions/user";
 import { toast } from "sonner";
+import { UploadButton } from "@/lib/uploadthing";
 
 interface SocialLink {
   platform: string;
@@ -69,16 +69,7 @@ const Profile = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setAvatarSrc(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+  
 
   const handleSocialLinkChange = (index: number, value: string) => {
     const updatedLinks = [...socialLinks];
@@ -208,23 +199,20 @@ const Profile = () => {
               >
                 <Avatar className="h-24 w-24 border-2 border-border">
                   {avatarSrc ? (
-                    <AvatarImage src={avatarSrc} alt="Profile" />
+                    <AvatarImage
+                      src={avatarSrc}
+                      alt="Profile"
+                      style={{
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
+                    />
                   ) : (
                     <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white text-xl">
                       {displayName?.substring(0, 2) || "AB"}
                     </AvatarFallback>
                   )}
                 </Avatar>
-                <div className="absolute inset-0 bg-black/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Camera className="h-6 w-6 text-white" />
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleFileChange}
-                />
               </div>
               <div className="text-center sm:text-left sm:flex-1">
                 <p className="text-sm text-muted-foreground mb-2">
@@ -234,6 +222,25 @@ const Profile = () => {
                   It helps personalize your profile and makes your account more
                   recognizable.
                 </p>
+
+                <div className="mt-4 flex items-start gap-2">
+                  <UploadButton
+                  endpoint="imageUploader"
+                  onClientUploadComplete={async (res) => {
+                    // Do something with the response
+                    toast("Upload Completed");
+                    setAvatarSrc(res[0]?.url || "");
+                    await updateUserProfile(session?.data?.user?.id || "", {
+                    avatar: res[0]?.url || "",
+                    });
+                  }}
+                  onUploadError={(error: Error) => {
+                    // Do something with the error.
+                    toast.error(`ERROR! ${error.message}`);
+                  }}
+                 
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

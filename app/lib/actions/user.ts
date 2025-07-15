@@ -61,7 +61,7 @@ export const updateUserProfile = async (
       },
     });
 
-    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/profile");
     return updatedUser;
   } catch (error) {
     console.error("Error updating user profile:", error);
