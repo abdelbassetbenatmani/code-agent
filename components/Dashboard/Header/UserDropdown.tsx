@@ -20,7 +20,7 @@ interface UserDropdownProps {
     id: string | undefined;
     name?: string | undefined;
     email?: string | undefined;
-    image?: string ;
+    image?: string;
     bio?: string | null | undefined;
     socialLinks?: any | null | undefined;
     secondaryEmail?: string | null | undefined;
@@ -50,7 +50,15 @@ const UserDropdown = ({ user }: UserDropdownProps) => {
           aria-label="User menu"
         >
           <Avatar className="h-9 w-9 border-2 border-primary/50 shadow">
-            <AvatarImage src={user.image} alt={user.name} />
+            <AvatarImage
+              src={user.image}
+              alt={user.name}
+              style={{
+                objectFit: "cover",
+                width: "100%",
+                height: "100%",
+              }}
+            />
             <AvatarFallback className="text-base font-semibold">
               {userInitials}
             </AvatarFallback>
@@ -77,7 +85,15 @@ const UserDropdown = ({ user }: UserDropdownProps) => {
         <DropdownMenuLabel className="font-normal pb-2">
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12 border-2 border-primary shadow">
-              <AvatarImage src={user.image} alt={user.name} />
+              <AvatarImage
+                src={user.image}
+                alt={user.name}
+                style={{
+                  objectFit: "cover",
+                  width: "100%",
+                  height: "100%",
+                }}
+              />
               <AvatarFallback className="text-lg font-bold">
                 {userInitials}
               </AvatarFallback>
@@ -93,13 +109,19 @@ const UserDropdown = ({ user }: UserDropdownProps) => {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem className="py-3 hover:bg-primary/10 rounded-lg transition-all">
-            <Link className="flex items-center " href={`/dashboard/profile?tab=profile`}>
+            <Link
+              className="flex items-center "
+              href={`/dashboard/profile?tab=profile`}
+            >
               <User className="mr-3 h-5 w-5 text-primary" />
               <span className="font-medium">Profile</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem className="py-3 hover:bg-primary/10 rounded-lg transition-all">
-            <Link className="flex items-center " href={`/dashboard/profile?tab=account`}>
+            <Link
+              className="flex items-center "
+              href={`/dashboard/profile?tab=account`}
+            >
               <Settings className="mr-3 h-5 w-5 text-primary" />
               <span className="font-medium">Settings</span>
             </Link>
