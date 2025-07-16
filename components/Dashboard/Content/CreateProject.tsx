@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle, Github, Loader2, RefreshCcw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { addRepoToProject, fetchRepos } from "@/app/lib/actions/github";
+import { addRepoToProject, fetchRepos, fetchUserRepos } from "@/app/lib/actions/github";
 import { useSession } from "next-auth/react";
 import useStore from "@/lib/store/store";
 
@@ -37,6 +37,7 @@ const CreateProject = ({
   const session = useSession();
 
   const [repos, setRepos] = useState<any[]>([]);
+  const [existingProjects, setExistingProjects] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedRepo, setSelectedRepo] = useState<string>("");
@@ -69,12 +70,13 @@ const CreateProject = ({
     setError(null);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      const response = await fetchRepos(session?.data?.accessToken || "");
+      const [reposResponse, existingProjectsResponse] = await Promise.all([
+        fetchRepos(session?.data?.accessToken || ""),
+        fetchUserRepos(session?.data?.user?.id || "")
+      ]);
 
-
-      setRepos(response);
+      setExistingProjects(existingProjectsResponse);
+      setRepos(reposResponse);
     } catch (err) {
       console.error("Error fetching repos:", err);
       setError(
@@ -180,16 +182,22 @@ const CreateProject = ({
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Your repositories</SelectLabel>
-                  {repos.map((repo) => (
-                    <SelectItem key={repo.id} value={repo.full_name}>
-                      <div className="flex items-center">
-                        <span className="truncate">{repo.name}</span>
-                        <span className="ml-1 text-xs text-muted-foreground">
-                          ({repo.language || "No language"})
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {repos.map((repo) => {
+                    const alreadyAdded = existingProjects.some((project: any) => project.id === repo.id);
+                    return (
+                      <SelectItem key={repo.id} value={repo.full_name} disabled={alreadyAdded}>
+                        <div className="flex items-center">
+                          <span className="truncate">{repo.name}</span>
+                          <span className="ml-1 text-xs text-muted-foreground">
+                            ({repo.language || "No language"})
+                          </span>
+                          {alreadyAdded && (
+                            <span className="ml-2 text-xs text-red-500">Already added</span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectGroup>
               </SelectContent>
             </Select>
