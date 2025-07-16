@@ -59,42 +59,67 @@ export const fetchRepos = async (accessToken: string) => {
     },
   });
 
-  if (!response.ok) {
+  if (!response.ok) {    
     throw new Error("Failed to fetch repositories");
   }
 
   return response.json();
 };
 
-export const fetchRepoContents = async (
+
+export interface GitHubFile {
+  name: string;
+  path: string;
+  type: "file" | "dir";
+  download_url: string | null;
+  children?: GitHubFile[];
+}
+
+export async function fetchRepoTree(
   accessToken: string,
   owner: string,
   repo: string,
   path = ""
-) => {
-  const response = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+): Promise<GitHubFile[]> {
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch repo contents");
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch path: ${path}`);
   }
 
-  return response.json(); // returns files/folders
-};
+  const items = (await res.json()) as GitHubFile[];
 
-export const fetchFileContent = async (
+  const withChildren = await Promise.all(
+    items.map(async (item) => {
+      if (item.type === "dir") {
+        const children = await fetchRepoTree(
+          accessToken,
+          owner,
+          repo,
+          item.path
+        );
+        return { ...item, children };
+      }
+      return item;
+    })
+  );
+
+  return withChildren;
+}
+
+
+export async function fetchGithubFileContent(
   accessToken: string,
   owner: string,
   repo: string,
   path: string
-) => {
+): Promise<string> {
   const res = await fetch(
     `https://api.github.com/repos/${owner}/${repo}/contents/${path}`,
     {
@@ -104,8 +129,15 @@ export const fetchFileContent = async (
     }
   );
 
-  const file = await res.json();
-  const decoded = atob(file.content); // decode Base64
+  if (!res.ok) {
+    throw new Error("Failed to fetch file content");
+  }
 
-  return decoded;
-};
+  const data = await res.json();
+
+  if (data.encoding === "base64") {
+    return atob(data.content);
+  }
+
+  return data.content;
+}

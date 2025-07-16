@@ -66,7 +66,7 @@ const ProjectsList = () => {
 
   const confirmDelete = async () => {
     if (!projectToDelete) return;
-    
+
     try {
       await deleteRepoProject(Number(projectToDelete));
       console.log("Project deleted successfully");
@@ -83,8 +83,9 @@ const ProjectsList = () => {
     setProjectToDelete(null);
   };
 
-  const projectToDeleteDetails = projectToDelete 
-    ? projects.find(p => p.id === projectToDelete) 
+
+  const projectToDeleteDetails = projectToDelete
+    ? projects.find((p) => p.id === projectToDelete)
     : null;
 
   if (viewMode === "grid") {
@@ -214,7 +215,7 @@ const ProjectsList = () => {
                     className="w-full border-muted-foreground/20 hover:bg-secondary/80"
                   >
                     <Link
-                      href={`/projects/${project.id}`}
+                      href={`/dashboard/projects/${project.owner}/${project.name}`}
                       className="flex items-center justify-center"
                     >
                       <Eye className="mr-2 h-3.5 w-3.5" />
@@ -272,7 +273,8 @@ const ProjectsList = () => {
                   <div
                     className={cn(
                       "absolute top-0 left-0 w-1 md:w-full md:h-1 h-full",
-                      project.languages?.[0] === "JavaScript" && "bg-yellow-400",
+                      project.languages?.[0] === "JavaScript" &&
+                        "bg-yellow-400",
                       project.languages?.[0] === "TypeScript" && "bg-blue-500",
                       project.languages?.[0] === "Python" && "bg-green-500",
                       project.languages?.[0] === "Java" && "bg-orange-600",
@@ -338,7 +340,9 @@ const ProjectsList = () => {
                             <Clock className="mr-1 h-3 w-3" />
                             <span>
                               Updated{" "}
-                              {formatDistanceToNow(new Date(project.lastUpdated))}{" "}
+                              {formatDistanceToNow(
+                                new Date(project.lastUpdated)
+                              )}{" "}
                               ago
                             </span>
                           </div>
@@ -359,8 +363,13 @@ const ProjectsList = () => {
                         <DropdownMenuContent align="end" className="w-[180px]">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            <span>View details</span>
+                            <Link
+                              href={`/dashboard/projects/${project.owner}/${project.name}`}
+                              className="flex items-center"
+                            >
+                              <Eye className="mr-2 h-4 w-4" />
+                              <span>View details</span>
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem>
                             <Edit className="mr-2 h-4 w-4" />
@@ -429,7 +438,7 @@ const ProjectsList = () => {
                           className="border-muted-foreground/20 hover:bg-secondary/80"
                         >
                           <Link
-                            href={`/projects/${project.id}`}
+                            href={`/dashboard/projects/${project.owner}/${project.name}`}
                             className="flex items-center"
                           >
                             <Eye className="mr-2 h-3.5 w-3.5" />

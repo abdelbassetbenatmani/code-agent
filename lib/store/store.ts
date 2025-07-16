@@ -8,6 +8,7 @@ export type SortOption = "name-asc" | "name-desc" | "date-new" | "date-old";
 export interface Project {
   id: string;
   name: string;
+  owner: string; // Assuming owner is a string, adjust if needed
   description: string;
   createdAt: Date;
   lastUpdated: Date;
