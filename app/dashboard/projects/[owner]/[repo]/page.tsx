@@ -236,6 +236,7 @@ const ProjectDetailsPage = () => {
                     language={getLanguage(selectedFile.name)}
                     style={coldarkDark}
                     showLineNumbers
+                    className="h-[500px] w-full"
                   >
                     {fileContent}
                   </SyntaxHighlighter>
