@@ -64,9 +64,17 @@ const ProjectDetailsPage = () => {
     issues: { type: string; line: number; message: string }[];
     score: number;
   } | null>(null);
-  const [refactoredCode, setRefactoredCode] = useState<string | null>(null);
+  const [refactoredCode, setRefactoredCode] = useState<{
+    original: string;
+    refactored: string;
+    changes: {
+      type: string;
+      description: string;
+    }[];
+    summary: string;
+  } | null>(null);
 
-  const [activeTab] = useState<"review" | "refactor">("review");
+  const [activeTab, setActiveTab] = useState<"review" | "refactor">("review");
 
   useEffect(() => {
     const loadTree = async () => {
@@ -118,6 +126,11 @@ const ProjectDetailsPage = () => {
   };
 
   const handleReviewCode = async () => {
+    if (!fileContent) {
+      console.error("No file content to review");
+      return;
+    }
+
     const body = {
       code: fileContent,
     };
@@ -125,6 +138,7 @@ const ProjectDetailsPage = () => {
     setLoading(true);
     setReviewResult(null);
     setRefactoredCode(null);
+    setActiveTab("review");
 
     try {
       // Method 1: Using axios properly
@@ -144,19 +158,35 @@ const ProjectDetailsPage = () => {
   };
 
   const handleRefactorCode = () => {
-    // Mock refactoring process
-    // setLoading(true);
-    // setTimeout(() => {
-    //   // Simple mock refactoring by adding types and comments
-    //   const refactored = selectedFile.content
-    //     .replace("function App()", "function App(): JSX.Element")
-    //     .replace(
-    //       '<div className="App">',
-    //       '// Main app container\n    <div className="App">'
-    //     );
-    //   setRefactoredCode(refactored);
-    //   setLoading(false);
-    // }, 2000);
+    if (!fileContent) {
+      console.error("No file content to refactor");
+      return;
+    }
+    const body = {
+      code: fileContent,
+    };
+
+    setLoading(true);
+    setReviewResult(null);
+    setRefactoredCode(null);
+    setActiveTab("refactor");
+
+    axios
+      .post("/api/refactoring", body, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+      .then((response) => {
+        console.log("Refactored Code:", response.data);
+        setRefactoredCode(response.data);
+      })
+      .catch((error) => {
+        console.error("Error during code refactoring:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   if (loading && !selectedFile) {
@@ -321,7 +351,7 @@ const ProjectDetailsPage = () => {
                     <div>
                       <h3 className="font-medium mb-3">Issues & Suggestions</h3>
                       <div className="space-y-2">
-                         {reviewResult.issues.map(
+                        {reviewResult.issues.map(
                           (
                             issue: {
                               type:
@@ -460,10 +490,63 @@ const ProjectDetailsPage = () => {
                 )
               ) : // Refactored Code
               refactoredCode ? (
-                <div className="border rounded-md overflow-hidden">
-                  <ScrollArea className="h-[350px] w-full">
-                    <>{refactoredCode}</>
-                  </ScrollArea>
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted rounded-md">
+                    <h3 className="font-medium mb-2">Summary</h3>
+                    <p>{refactoredCode.summary}</p>
+                  </div>
+
+                  <div className="border rounded-md overflow-hidden">
+                    <ScrollArea className="h-[350px] w-full">
+                      <SyntaxHighlighter
+                        language={
+                          selectedFile
+                            ? getLanguage(selectedFile.name)
+                            : "typescript"
+                        }
+                        style={coldarkDark}
+                        showLineNumbers
+                      >
+                        {refactoredCode.refactored}
+                      </SyntaxHighlighter>
+                    </ScrollArea>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium mb-3">Changes Made</h3>
+                    <div className="space-y-2">
+                      {refactoredCode.changes.map((change, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-2 p-3 border rounded-md"
+                        >
+                          <div
+                            className={`p-1 rounded-full ${
+                              change.type === "performance"
+                                ? "bg-purple-100 text-purple-600"
+                                : change.type === "readability"
+                                ? "bg-blue-100 text-blue-600"
+                                : change.type === "structure"
+                                ? "bg-green-100 text-green-600"
+                                : change.type === "security"
+                                ? "bg-red-100 text-red-600"
+                                : "bg-yellow-100 text-yellow-600"
+                            }`}
+                          >
+                            <RefreshCcw className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <div className="text-sm font-medium">
+                              <span className="capitalize">{change.type}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {change.description}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="h-[300px] flex items-center justify-center text-center">
