@@ -59,13 +59,12 @@ export const fetchRepos = async (accessToken: string) => {
     },
   });
 
-  if (!response.ok) {    
+  if (!response.ok) {
     throw new Error("Failed to fetch repositories");
   }
 
   return response.json();
 };
-
 
 export interface GitHubFile {
   name: string;
@@ -76,43 +75,58 @@ export interface GitHubFile {
 }
 
 export async function fetchRepoTree(
-  accessToken: string,
-  owner: string,
-  repo: string,
+  accessToken: string | undefined,
+  owner: string | string[],
+  repo: string | string[],
   path = ""
 ): Promise<GitHubFile[]> {
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-
-  const res = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch path: ${path}`);
+  // Return empty array if required params are missing
+  if (!accessToken || !owner || !repo) {
+    return [];
   }
 
-  const items = (await res.json()) as GitHubFile[];
+  // Convert params to string if they're arrays
+  const ownerStr = Array.isArray(owner) ? owner[0] : owner;
+  const repoStr = Array.isArray(repo) ? repo[0] : repo;
 
-  const withChildren = await Promise.all(
-    items.map(async (item) => {
-      if (item.type === "dir") {
-        const children = await fetchRepoTree(
-          accessToken,
-          owner,
-          repo,
-          item.path
-        );
-        return { ...item, children };
-      }
-      return item;
-    })
-  );
+  const url = `https://api.github.com/repos/${ownerStr}/${repoStr}/contents/${path}`;
 
-  return withChildren;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+
+    if (!res.ok) {
+      console.error(`Failed to fetch path: ${path} - Status: ${res.status}`);
+      return [];
+    }
+
+    const items = (await res.json()) as GitHubFile[];
+
+    const withChildren = await Promise.all(
+      items.map(async (item) => {
+        if (item.type === "dir") {
+          const children = await fetchRepoTree(
+            accessToken,
+            ownerStr,
+            repoStr,
+            item.path
+          );
+          return { ...item, children };
+        }
+        return item;
+      })
+    );
+
+    return withChildren;
+  } catch (error) {
+    console.error(`Error fetching repo tree for ${path}:`, error);
+    return [];
+  }
 }
-
 
 export async function fetchGithubFileContent(
   accessToken: string,

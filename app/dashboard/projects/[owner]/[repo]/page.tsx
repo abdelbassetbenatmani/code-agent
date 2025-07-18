@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Code, Eye, RefreshCcw, Github } from "lucide-react";
+import { Loader2, Code, Eye, RefreshCcw, Github, X, Check } from "lucide-react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coldarkDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
@@ -23,6 +24,7 @@ import {
   GitHubFile,
 } from "@/app/lib/actions/github";
 import FileTree from "@/components/FileTree";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function getLanguage(filename: string) {
   const ext = filename.split(".").pop();
@@ -51,27 +53,54 @@ function getLanguage(filename: string) {
 }
 
 const ProjectDetailsPage = () => {
-  const session = useSession();
+  const { data } = useSession();
   const { owner, repo } = useParams();
-  console.log({ owner, repo });
-
   const [tree, setTree] = useState<GitHubFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<GitHubFile | null>(null);
   const [fileContent, setFileContent] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [activeTab, ] = useState<"review" | "refactor">("review");
+  const [reviewResult, setReviewResult] = useState<{
+    summary: string;
+    issues: { type: string; line: number; message: string }[];
+    score: number;
+  } | null>(null);
+  const [refactoredCode, setRefactoredCode] = useState<string | null>(null);
+
+  const [activeTab] = useState<"review" | "refactor">("review");
 
   useEffect(() => {
     const loadTree = async () => {
-
+      setLoading(true); // Show loading state while fetching
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      const tree = await fetchRepoTree(session?.data?.accessToken, owner, repo);
-      setTree(tree);
+      if (data?.accessToken) {
+        try {
+          if (typeof owner === "string" && typeof repo === "string") {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            const tree = await fetchRepoTree(data?.accessToken, owner, repo);
+            setTree(tree);
+          } else {
+            console.error("Owner or repo is undefined or not a string");
+            setTree([]);
+          }
+        } catch (error) {
+          console.error("Error loading repository tree:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
     };
+
     loadTree();
-  }, [owner, repo, session?.data?.accessToken]);
+  }, [
+    owner,
+    repo,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    data?.accessToken,
+  ]);
 
   const handleFileClick = async (file: GitHubFile) => {
     setSelectedFile(file);
@@ -79,7 +108,7 @@ const ProjectDetailsPage = () => {
     const content = await fetchGithubFileContent(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      session?.data?.accessToken,
+      data?.accessToken,
       owner as string,
       repo as string,
       file.path
@@ -88,34 +117,30 @@ const ProjectDetailsPage = () => {
     setLoading(false);
   };
 
-  const handleReviewCode = () => {
-    // Mock review process
-    // setLoading(true);
-    // setTimeout(() => {
-    //   setReviewResult({
-    //     summary: "Code review completed",
-    //     issues: [
-    //       {
-    //         type: "improvement",
-    //         line: 3,
-    //         message: "Consider adding type annotations to this function",
-    //       },
-    //       {
-    //         type: "warning",
-    //         line: 8,
-    //         message: "This could be simplified using optional chaining",
-    //       },
-    //       {
-    //         type: "best-practice",
-    //         line: 12,
-    //         message:
-    //           "Extract this logic into a separate function for better readability",
-    //       },
-    //     ],
-    //     score: 85,
-    //   });
-    //   setLoading(false);
-    // }, 1500);
+  const handleReviewCode = async () => {
+    const body = {
+      code: fileContent,
+    };
+
+    setLoading(true);
+    setReviewResult(null);
+    setRefactoredCode(null);
+
+    try {
+      // Method 1: Using axios properly
+      const response = await axios.post("/api/review", body, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Review Result:", response.data);
+      setReviewResult(response.data);
+    } catch (error) {
+      console.error("Error during code review:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRefactorCode = () => {
@@ -129,7 +154,6 @@ const ProjectDetailsPage = () => {
     //       '<div className="App">',
     //       '// Main app container\n    <div className="App">'
     //     );
-
     //   setRefactoredCode(refactored);
     //   setLoading(false);
     // }, 2000);
@@ -205,10 +229,6 @@ const ProjectDetailsPage = () => {
                     onClick={handleReviewCode}
                     disabled={!selectedFile || loading}
                     variant={activeTab === "review" ? "default" : "outline"}
-                    // onClick={() => {
-                    //   handleTabChange("review");
-                    //   if (!reviewResult) handleReviewCode();
-                    // }}
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     Review
@@ -217,10 +237,6 @@ const ProjectDetailsPage = () => {
                     onClick={handleRefactorCode}
                     disabled={!selectedFile || loading}
                     variant={activeTab === "refactor" ? "default" : "outline"}
-                    // onClick={() => {
-                    //   handleTabChange("refactor");
-                    //   if (!refactoredCode) handleRefactorCode();
-                    // }}
                   >
                     <RefreshCcw className="h-4 w-4 mr-2" />
                     Refactor
@@ -254,7 +270,7 @@ const ProjectDetailsPage = () => {
           </Card>
 
           {/* 3. Results Section: Review or Refactored Code */}
-          {/* <Card>
+          <Card>
             <CardHeader>
               <CardTitle className="text-lg">
                 {activeTab === "review"
@@ -305,7 +321,7 @@ const ProjectDetailsPage = () => {
                     <div>
                       <h3 className="font-medium mb-3">Issues & Suggestions</h3>
                       <div className="space-y-2">
-                        {reviewResult.issues.map(
+                         {reviewResult.issues.map(
                           (
                             issue: {
                               type:
@@ -430,7 +446,7 @@ const ProjectDetailsPage = () => {
                               </div>
                             </div>
                           )
-                        )}
+                        )}{" "}
                       </div>
                     </div>
                   </div>
@@ -458,7 +474,7 @@ const ProjectDetailsPage = () => {
                 </div>
               )}
             </CardContent>
-          </Card> */}
+          </Card>
         </div>
       </div>
     </div>
