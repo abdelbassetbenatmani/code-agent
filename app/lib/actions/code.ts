@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { v4 as uuidv4 } from "uuid";
+import { RefactoringType, ReviewType } from "@/prisma/types";
 
 interface RepoDetails {
   name: string;
@@ -131,7 +132,7 @@ export async function saveRefactorCode(
 export async function getRepoReviews(
   ownerLogin: string,
   repoName: string
-): Promise<any[]> {
+): Promise<ReviewType[]> {
   const reviews = await prisma.codeReview.findMany({
     where: {
       repoOwner: ownerLogin,
@@ -148,7 +149,7 @@ export async function getRepoReviews(
 export async function getRepoRefactors(
   ownerLogin: string,
   repoName: string
-): Promise<any[]> {
+): Promise<RefactoringType[]> {
   const refactors = await prisma.codeRefactor.findMany({
     where: {
       repoOwner: ownerLogin,
