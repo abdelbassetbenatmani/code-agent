@@ -126,3 +126,38 @@ export async function saveRefactorCode(
 
   revalidatePath(`/dashboard`);
 }
+
+
+export async function getRepoReviews(
+  ownerLogin: string,
+  repoName: string
+): Promise<any[]> {
+  const reviews = await prisma.codeReview.findMany({
+    where: {
+      repoOwner: ownerLogin,
+      repoName: repoName,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return reviews;
+}
+
+export async function getRepoRefactors(
+  ownerLogin: string,
+  repoName: string
+): Promise<any[]> {
+  const refactors = await prisma.codeRefactor.findMany({
+    where: {
+      repoOwner: ownerLogin,
+      repoName: repoName,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return refactors;
+}
