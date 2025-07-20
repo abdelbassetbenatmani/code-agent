@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
-import IssueBox from "@/components/utils/issueBox";
+import IssueCard from "@/components/utils/IssueCard";
+// import IssueBox from "@/components/utils/issueBox";
 import { Eye } from "lucide-react";
+
 
 interface ReviewResult {
   summary: string;
@@ -55,7 +57,7 @@ export const ReviewResults = ({
         <h3 className="font-medium mb-3">Issues & Suggestions</h3>
         <div className="space-y-2">
           {reviewResult.issues.map((issue, index) => (
-            <IssueBox
+            <IssueCard
               key={index}
               issue={{
                 type: issue.type,
@@ -64,6 +66,7 @@ export const ReviewResults = ({
               }}
               index={index}
             />
+            
           ))}
         </div>
       </div>

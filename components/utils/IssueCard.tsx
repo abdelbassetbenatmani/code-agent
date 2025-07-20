@@ -8,7 +8,7 @@ interface Issue {
   message: string;
 }
 
-const IssueBox = ({ issue, index }: { issue: Issue; index: number }) => {
+const IssueCard = ({ issue, index }: { issue: Issue; index: number }) => {
   return (
     <div key={index} className="flex items-start gap-2 p-3 border rounded-md">
       <div
@@ -41,4 +41,4 @@ const IssueBox = ({ issue, index }: { issue: Issue; index: number }) => {
   );
 };
 
-export default IssueBox;
+export default IssueCard;

@@ -12,6 +12,8 @@ import {
   MoreHorizontal,
   Trash,
   AlertTriangle,
+  RefreshCcw,
+  Plus,
 } from "lucide-react";
 import {
   Dialog,
@@ -20,12 +22,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
+
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
+  // CardFooter,
   CardTitle,
 } from "@/components/ui/card";
 import {
@@ -40,21 +43,35 @@ import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { deleteRepoProject } from "@/app/lib/actions/github";
+import CreateProject from "./CreateProject";
 
 const ProjectsList = () => {
   const { viewMode, getFilteredProjects, deleteProject } = useStore();
   const projects = getFilteredProjects();
+  const [open, setOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
+
   if (projects.length === 0) {
     return (
-      <div className="mt-8 p-8 bg-muted/30 rounded-lg text-center">
+      <div className="mt-8 p-8 bg-muted/30 rounded-lg text-center flex flex-col items-center">
         <h3 className="text-xl font-medium">No projects found</h3>
         <p className="text-muted-foreground mt-2">
           Try adjusting your filters or create a new project.
         </p>
-        <Button className="mt-4">Create Project</Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger className="h-10 mt-5 px-3 flex items-center gap-1.5  justify-center  whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/90">
+            <Plus className="h-4 w-4" />
+            <span className="hidden sm:inline">Create New Project</span>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Import Git Repository</DialogTitle>
+              <CreateProject onOpenChange={setOpen} />
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -83,7 +100,6 @@ const ProjectsList = () => {
     setProjectToDelete(null);
   };
 
-
   const projectToDeleteDetails = projectToDelete
     ? projects.find((p) => p.id === projectToDelete)
     : null;
@@ -95,13 +111,26 @@ const ProjectsList = () => {
           {projects.map((project) => (
             <Card
               key={project.id}
-              className="group overflow-hidden border-0 bg-card/50 transition-all hover:shadow-lg hover:bg-card dark:bg-[#0d1117] dark:hover:bg-[#161b22] dark:border-[#30363d]"
+              className="group overflow-hidden border border-border/40 bg-background transition-all hover:shadow-md dark:bg-[#0d1117] dark:hover:bg-[#161b22] dark:border-[#30363d] dark:shadow-lg dark:hover:shadow-indigo-500/10"
             >
-              <div className="p-4">
+              {/* Top accent bar - varies by primary language */}
+              <div
+                className={cn(
+                  "h-1 w-full",
+                  project.languages?.[0] === "JavaScript" && "bg-yellow-400",
+                  project.languages?.[0] === "TypeScript" && "bg-blue-500",
+                  project.languages?.[0] === "Python" && "bg-green-500",
+                  project.languages?.[0] === "Java" && "bg-orange-600",
+                  project.languages?.[0] === "C#" && "bg-purple-600",
+                  !project.languages?.[0] && "bg-gray-400"
+                )}
+              />
+
+              <div className="p-5">
                 <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                    <CardTitle className="text-lg font-semibold flex items-center">
-                      <span className="mr-2 flex items-center justify-center bg-muted rounded-md p-2">
+                  <div className="space-y-2 flex-1">
+                    <CardTitle className="text-lg font-semibold flex items-center group-hover:text-primary transition-colors">
+                      <span className="mr-2.5 flex items-center justify-center bg-muted/80 dark:bg-slate-800/60 rounded-md p-2 group-hover:bg-muted/50 dark:group-hover:bg-slate-800 transition-colors">
                         <Github className="h-5 w-5" />
                       </span>
                       {project.name}
@@ -125,9 +154,13 @@ const ProjectsList = () => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-[180px]">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem>
-                        <Eye className="mr-2 h-4 w-4" />
-                        <span>View details</span>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          href={`/dashboard/projects/${project.owner}/${project.name}`}
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          <span>View details</span>
+                        </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem>
                         <Edit className="mr-2 h-4 w-4" />
@@ -165,54 +198,89 @@ const ProjectsList = () => {
                     return (
                       <div
                         key={lang}
-                        className="flex items-center text-xs text-muted-foreground"
+                        className="flex items-center text-xs bg-muted/40 dark:bg-slate-800/60 px-2 py-1 rounded-full text-muted-foreground"
                       >
                         <span
-                          className={`h-3 w-3 rounded-full mr-1.5 ${langColor}`}
+                          className={`h-2.5 w-2.5 rounded-full mr-1.5 ${langColor}`}
                         ></span>
                         {lang}
                       </div>
                     );
                   })}
                   {!project.languages?.length && (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs bg-muted/40 dark:bg-slate-800/60 px-2 py-1 rounded-full text-muted-foreground">
                       No languages specified
                     </div>
                   )}
                 </div>
 
-                <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
-                  {/* Status badge GitHub style */}
-                  <div className="flex items-center">
-                    <div
-                      className={cn(
-                        "h-2 w-2 rounded-full mr-1.5",
-                        project.status === "public"
-                          ? "bg-green-500"
-                          : project.status === "private"
-                          ? "bg-red-500"
-                          : "bg-gray-500"
-                      )}
-                    ></div>
-                    <span className="capitalize">{project.status}</span>
+                {/* Activity metrics - added review and refactor counts */}
+                <div className="mt-5 grid grid-cols-4 gap-2 text-xs">
+                  <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
+                    <div className="flex items-center justify-center mb-1">
+                      <div
+                        className={cn(
+                          "h-2 w-2 rounded-full mr-1.5",
+                          project.status === "public"
+                            ? "bg-green-500"
+                            : project.status === "private"
+                            ? "bg-red-500"
+                            : "bg-gray-500"
+                        )}
+                      ></div>
+                      <span className="capitalize text-muted-foreground">
+                        {project.status}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/70">
+                      Status
+                    </span>
                   </div>
 
-                  {/* Created time */}
-                  <div className="flex items-center">
-                    <Calendar className="mr-1 h-3 w-3" />
-                    <span>
-                      Updated {formatDistanceToNow(new Date(project.createdAt))}{" "}
-                      ago
+                  <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
+                    <div className="flex items-center justify-center mb-1">
+                      <Calendar className="h-3 w-3 mr-1 text-muted-foreground" />
+                      <span
+                        className="text-muted-foreground truncate max-w-[90px]"
+                        title={formatDistanceToNow(
+                          new Date(project.lastUpdated)
+                        )}
+                      >
+                        {formatDistanceToNow(new Date(project.lastUpdated))}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/70">
+                      Updated
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
+                    <div className="flex items-center justify-center mb-1">
+                      <Eye className="h-3 w-3 mr-1 text-blue-500" />
+                      <span className="text-muted-foreground">{0}</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/70">
+                      Reviews
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
+                    <div className="flex items-center justify-center mb-1">
+                      <RefreshCcw className="h-3 w-3 mr-1 text-purple-500" />
+                      <span className="text-muted-foreground">{0}</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/70">
+                      Refactors
                     </span>
                   </div>
                 </div>
 
-                <CardFooter className="px-0 pt-4 pb-0">
+                <div className="mt-5 flex items-center gap-2">
                   <Button
                     asChild
-                    variant="outline"
+                    variant="default"
                     size="sm"
-                    className="w-full border-muted-foreground/20 hover:bg-secondary/80"
+                    className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-md"
                   >
                     <Link
                       href={`/dashboard/projects/${project.owner}/${project.name}`}
@@ -222,7 +290,37 @@ const ProjectsList = () => {
                       View Project
                     </Link>
                   </Button>
-                </CardFooter>
+
+                  <div className="flex gap-1">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="border-muted-foreground/20 dark:bg-slate-800/60 dark:hover:bg-slate-800 dark:border-slate-700"
+                    >
+                      <Link
+                        href={`/dashboard/projects/${project.owner}/${project.name}/reviews`}
+                        className="flex items-center justify-center"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="border-muted-foreground/20 dark:bg-slate-800/60 dark:hover:bg-slate-800 dark:border-slate-700"
+                    >
+                      <Link
+                        href={`/dashboard/projects/${project.owner}/${project.name}/refactors`}
+                        className="flex items-center justify-center"
+                      >
+                        <RefreshCcw className="h-3.5 w-3.5" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </Card>
           ))}
@@ -264,7 +362,7 @@ const ProjectsList = () => {
           {projects.map((project) => (
             <Card
               key={project.id}
-              className="overflow-hidden transition-all hover:shadow-md border-0 bg-card/50 dark:bg-[#0d1117] dark:hover:bg-[#161b22] dark:border-[#30363d]"
+              className="group overflow-hidden transition-all hover:shadow-md border border-border/40 bg-background dark:bg-[#0d1117] dark:hover:bg-[#161b22] dark:border-[#30363d] dark:shadow-lg dark:hover:shadow-indigo-500/10"
             >
               <div className="flex flex-col md:flex-row">
                 {/* Left side with GitHub logo and language indicator */}
@@ -320,11 +418,11 @@ const ProjectsList = () => {
                 </div>
 
                 {/* Right side with project details */}
-                <CardContent className="flex-1 p-0">
+                <div className="flex-1 p-0">
                   <div className="p-6">
                     <div className="flex justify-between items-start mb-4">
                       <div>
-                        <CardTitle className="text-lg font-semibold mb-1 flex items-center">
+                        <CardTitle className="text-lg font-semibold mb-1 flex items-center group-hover:text-primary transition-colors">
                           {project.name}
                         </CardTitle>
                         <CardDescription className="flex flex-wrap gap-3 text-xs">
@@ -362,10 +460,9 @@ const ProjectsList = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[180px]">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem asChild>
                             <Link
                               href={`/dashboard/projects/${project.owner}/${project.name}`}
-                              className="flex items-center"
                             >
                               <Eye className="mr-2 h-4 w-4" />
                               <span>View details</span>
@@ -377,8 +474,8 @@ const ProjectsList = () => {
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
-                            onClick={() => handleDeleteClick(project.id)}
                             className="text-destructive focus:text-destructive"
+                            onClick={() => handleDeleteClick(project.id)}
                           >
                             <Trash className="mr-2 h-4 w-4" />
                             <span>Delete</span>
@@ -393,62 +490,110 @@ const ProjectsList = () => {
                         {project.description || "No description provided"}
                       </p>
 
-                      {/* Tech stack with GitHub style colored dots */}
-                      <div className="flex flex-wrap gap-2">
-                        {project.languages?.map((lang) => {
-                          // Define language-specific colors
-                          const langColor =
-                            lang === "JavaScript"
-                              ? "bg-yellow-400"
-                              : lang === "TypeScript"
-                              ? "bg-blue-500"
-                              : lang === "Python"
-                              ? "bg-green-500"
-                              : lang === "Java"
-                              ? "bg-orange-600"
-                              : lang === "C#"
-                              ? "bg-purple-600"
-                              : "bg-gray-400";
+                      <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                        {/* Tech stack with GitHub style colored dots */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {project.languages?.map((lang) => {
+                            // Define language-specific colors
+                            const langColor =
+                              lang === "JavaScript"
+                                ? "bg-yellow-400"
+                                : lang === "TypeScript"
+                                ? "bg-blue-500"
+                                : lang === "Python"
+                                ? "bg-green-500"
+                                : lang === "Java"
+                                ? "bg-orange-600"
+                                : lang === "C#"
+                                ? "bg-purple-600"
+                                : "bg-gray-400";
 
-                          return (
-                            <div
-                              key={lang}
-                              className="flex items-center text-xs text-muted-foreground"
-                            >
-                              <span
-                                className={`h-3 w-3 rounded-full mr-1.5 ${langColor}`}
-                              ></span>
-                              {lang}
+                            return (
+                              <div
+                                key={lang}
+                                className="flex items-center text-xs bg-muted/40 dark:bg-slate-800/60 px-2 py-1 rounded-full text-muted-foreground"
+                              >
+                                <span
+                                  className={`h-2.5 w-2.5 rounded-full mr-1.5 ${langColor}`}
+                                ></span>
+                                {lang}
+                              </div>
+                            );
+                          })}
+                          {!project.languages?.length && (
+                            <div className="text-xs bg-muted/40 dark:bg-slate-800/60 px-2 py-1 rounded-full text-muted-foreground">
+                              No languages specified
                             </div>
-                          );
-                        })}
-                        {!project.languages?.length && (
-                          <div className="text-xs text-muted-foreground">
-                            No languages specified
+                          )}
+                        </div>
+
+                        {/* Activity metrics for list view - more compact */}
+                        <div className="flex gap-3 text-xs ml-auto">
+                          <div className="flex items-center px-2 py-1 bg-muted/30 dark:bg-slate-800/40 rounded-md">
+                            <Eye className="h-3 w-3 mr-1.5 text-blue-500" />
+                            <span className="text-muted-foreground">
+                              {0} Reviews
+                            </span>
                           </div>
-                        )}
+                          <div className="flex items-center px-2 py-1 bg-muted/30 dark:bg-slate-800/40 rounded-md">
+                            <RefreshCcw className="h-3 w-3 mr-1.5 text-purple-500" />
+                            <span className="text-muted-foreground">
+                              {0} Refactors
+                            </span>
+                          </div>
+                        </div>
                       </div>
 
                       {/* Action buttons */}
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
                         <Button
                           asChild
-                          variant="outline"
+                          variant="default"
                           size="sm"
-                          className="border-muted-foreground/20 hover:bg-secondary/80"
+                          className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white shadow-md"
                         >
                           <Link
                             href={`/dashboard/projects/${project.owner}/${project.name}`}
-                            className="flex items-center"
+                            className="flex items-center justify-center"
                           >
                             <Eye className="mr-2 h-3.5 w-3.5" />
                             View Project
                           </Link>
                         </Button>
+
+                        <div className="flex gap-1">
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="border-muted-foreground/20 dark:bg-slate-800/60 dark:hover:bg-slate-800 dark:border-slate-700"
+                          >
+                            <Link
+                              href={`/dashboard/projects/${project.owner}/${project.name}/reviews`}
+                              className="flex items-center justify-center"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="border-muted-foreground/20 dark:bg-slate-800/60 dark:hover:bg-slate-800 dark:border-slate-700"
+                          >
+                            <Link
+                              href={`/dashboard/projects/${project.owner}/${project.name}/refactors`}
+                              className="flex items-center justify-center"
+                            >
+                              <RefreshCcw className="h-3.5 w-3.5" />
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </div>
               </div>
             </Card>
           ))}
