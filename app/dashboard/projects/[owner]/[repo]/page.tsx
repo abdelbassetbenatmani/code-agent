@@ -11,9 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Loader2,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { useSession } from "next-auth/react";
 import {
@@ -38,13 +36,17 @@ const ProjectDetailsPage = () => {
   const [loading, setLoading] = useState(false);
   const [reviewResult, setReviewResult] = useState<{
     summary: string;
-    issues: { type: string; line: number; message: string }[];
+    issues: {
+      type: "improvement" | "warning" | "error";
+      line: number;
+      message: string;
+    }[];
     score: number;
   } | null>(null);
   const [refactoredCode, setRefactoredCode] = useState<{
     refactored: string;
     changes: {
-      type: string;
+      type: "performance" | "readability" | "structure" | "security" | "other";
       description: string;
     }[];
     summary: string;

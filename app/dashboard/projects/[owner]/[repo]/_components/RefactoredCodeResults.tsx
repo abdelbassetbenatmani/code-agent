@@ -4,11 +4,12 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 import { getLanguage } from "./getLanguage";
 import { coldarkDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { GitHubFile } from "@/app/lib/actions/github";
+import ChangeBox from "@/components/utils/ChangeBox";
 
 interface RefactoredCode {
   refactored: string;
   changes: {
-    type: string;
+    type: "performance" | "readability" | "structure" | "security" | "other";
     description: string;
   }[];
   summary: string;
@@ -58,34 +59,14 @@ export const RefactoredCodeResults = ({
         <h3 className="font-medium mb-3">Changes Made</h3>
         <div className="space-y-2">
           {refactoredCode.changes.map((change, index) => (
-            <div
+            <ChangeBox
               key={index}
-              className="flex items-start gap-2 p-3 border rounded-md"
-            >
-              <div
-                className={`p-1 rounded-full ${
-                  change.type === "performance"
-                    ? "bg-purple-100 text-purple-600"
-                    : change.type === "readability"
-                    ? "bg-blue-100 text-blue-600"
-                    : change.type === "structure"
-                    ? "bg-green-100 text-green-600"
-                    : change.type === "security"
-                    ? "bg-red-100 text-red-600"
-                    : "bg-yellow-100 text-yellow-600"
-                }`}
-              >
-                <RefreshCcw className="h-4 w-4" />
-              </div>
-              <div>
-                <div className="text-sm font-medium">
-                  <span className="capitalize">{change.type}</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {change.description}
-                </p>
-              </div>
-            </div>
+              change={{
+                type: change.type,
+                description: change.description,
+              }}
+              index={index}
+            />
           ))}
         </div>
       </div>
