@@ -128,6 +128,7 @@ const CreateProject = ({
         createdAt: selectedRepoDetails?.created_at || "",
         lastUpdated: selectedRepoDetails?.updated_at || "",
         status: "active",
+        owner: session?.data?.user?.name || "Unknown",
         languages: selectedRepoDetails?.language ? [selectedRepoDetails.language] : ["No language detected"],
       });
 

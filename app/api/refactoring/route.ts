@@ -18,7 +18,6 @@ const prompt = (code: string, language?: string) => {
     Please refactor this code and return your results in the following JSON format ONLY:
     
     {
-      "original": "The original code",
       "refactored": "The refactored code",
       "changes": [
         {

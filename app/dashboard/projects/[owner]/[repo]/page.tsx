@@ -25,6 +25,7 @@ import {
 } from "@/app/lib/actions/github";
 import FileTree from "@/components/FileTree";
 import { Skeleton } from "@/components/ui/skeleton";
+import { saveRefactorCode, saveReviewCode } from "@/app/lib/actions/code";
 
 function getLanguage(filename: string) {
   const ext = filename.split(".").pop();
@@ -65,7 +66,6 @@ const ProjectDetailsPage = () => {
     score: number;
   } | null>(null);
   const [refactoredCode, setRefactoredCode] = useState<{
-    original: string;
     refactored: string;
     changes: {
       type: string;
@@ -150,6 +150,27 @@ const ProjectDetailsPage = () => {
 
       console.log("Review Result:", response.data);
       setReviewResult(response.data);
+
+      // save the review to the database
+      if (data?.user?.id && selectedFile) {
+        const review = {
+          summary: response.data.summary,
+          issues: response.data.issues,
+          score: response.data.score,
+        };
+
+        await saveReviewCode(
+          data.user.id,
+          {
+            name: repo as string,
+            ownerLogin: owner as string,
+            path: selectedFile.path || "",
+          },
+          selectedFile.name,
+          review,
+          fileContent
+        );
+      }
     } catch (error) {
       console.error("Error during code review:", error);
     } finally {
@@ -177,9 +198,32 @@ const ProjectDetailsPage = () => {
           "Content-Type": "application/json",
         },
       })
-      .then((response) => {
+      .then(async (response) => {
         console.log("Refactored Code:", response.data);
         setRefactoredCode(response.data);
+
+        // Save the refactored code to the database
+        if (data?.user?.id && selectedFile) {
+          const refactorData = {
+            refactored: response.data.refactored,
+            changes: response.data.changes,
+            summary: response.data.summary,
+          };
+
+          await saveRefactorCode(
+            data.user.id,
+            {
+              name: repo as string,
+              ownerLogin: owner as string,
+              path: selectedFile.path || "",
+            },
+            selectedFile.name,
+            refactorData.refactored || "",
+            fileContent,
+            refactorData.summary,
+            refactorData.changes
+          );
+        }
       })
       .catch((error) => {
         console.error("Error during code refactoring:", error);
