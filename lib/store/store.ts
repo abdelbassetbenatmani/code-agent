@@ -10,6 +10,8 @@ export interface Project {
   name: string;
   owner: string; // Assuming owner is a string, adjust if needed
   description: string;
+  reviewCount: number;
+  refactorCount: number;
   createdAt: Date;
   lastUpdated: Date;
   status: "private" | "public" | "active";

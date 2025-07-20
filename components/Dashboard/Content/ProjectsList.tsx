@@ -52,7 +52,6 @@ const ProjectsList = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
 
-
   if (projects.length === 0) {
     return (
       <div className="mt-8 p-8 bg-muted/30 rounded-lg text-center flex flex-col items-center">
@@ -257,7 +256,9 @@ const ProjectsList = () => {
                   <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
                     <div className="flex items-center justify-center mb-1">
                       <Eye className="h-3 w-3 mr-1 text-blue-500" />
-                      <span className="text-muted-foreground">{0}</span>
+                      <span className="text-muted-foreground">
+                        {project.reviewCount}
+                      </span>
                     </div>
                     <span className="text-[10px] text-muted-foreground/70">
                       Reviews
@@ -267,7 +268,9 @@ const ProjectsList = () => {
                   <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
                     <div className="flex items-center justify-center mb-1">
                       <RefreshCcw className="h-3 w-3 mr-1 text-purple-500" />
-                      <span className="text-muted-foreground">{0}</span>
+                      <span className="text-muted-foreground">
+                        {project.refactorCount}
+                      </span>
                     </div>
                     <span className="text-[10px] text-muted-foreground/70">
                       Refactors

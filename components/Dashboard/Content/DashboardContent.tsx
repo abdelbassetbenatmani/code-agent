@@ -35,6 +35,8 @@ const DashboardContent = () => {
           lastUpdated: repo.updatedAt,
           status: repo.private ? "private" : "public",
           languages: repo.language ? [repo.language] : [],
+          reviewCount: repo.reviewCount || 0,
+          refactorCount: repo.refactorCount || 0,
         }));
 
         return setProjects(projects);
