@@ -50,9 +50,26 @@ export async function saveReviewCode(
     },
   });
 
-  revalidatePath(`/reviews/${reviewResponse.id}`);
+  if (reviewResponse) {
+    // Increment the review count for the repository
+    await prisma.repo.update({
+      where: {
+        ownerLogin_name: {
+          ownerLogin: selectedRepoDetails.ownerLogin,
+          name: selectedRepoDetails.name,
+        },
+      },
+      data: {
+        reviewCount: {
+          increment: 1,
+        },
+      },
+    });
+  }
 
-  return review;
+  revalidatePath(`/dashboard`);
+
+  return reviewResponse;
 }
 
 export async function saveRefactorCode(
@@ -74,7 +91,7 @@ export async function saveRefactorCode(
     formatedChanges = JSON.stringify(formatedChanges);
   }
 
-  await prisma.codeRefactor.create({
+  const refactorResponse = await prisma.codeRefactor.create({
     data: {
       id: uuidv4(),
       userId: currentUserId,
@@ -87,6 +104,25 @@ export async function saveRefactorCode(
       summary,
       changes: formatedChanges ?? null,
     },
+
   });
-  revalidatePath(`/`);
+
+  if (refactorResponse) {
+    // Increment the refactor count for the repository
+    await prisma.repo.update({
+      where: {
+        ownerLogin_name: {
+          ownerLogin: selectedRepoDetails.ownerLogin,
+          name: selectedRepoDetails.name,
+        },
+      },
+      data: {
+        refactorCount: {
+          increment: 1,
+        },
+      },
+    });
+  }
+
+  revalidatePath(`/dashboard`);
 }

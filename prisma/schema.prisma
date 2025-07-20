@@ -21,6 +21,9 @@ model User {
   accounts       Account[]
   Authenticator  Authenticator[]
   sessions       Session[]
+
+
+  Repo Repo[]
 }
 
 model Account {
@@ -95,8 +98,12 @@ model Repo {
   forksCount      Int
   openIssuesCount Int
   userId          String?
+
+  reviewCount     Int         @default(0)
+  refactorCount   Int         @default(0)
   
- 
+  @@unique([ownerLogin, name])
+  user            User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model CodeReview {

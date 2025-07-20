@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Repo" ADD COLUMN     "refactorCount" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "reviewCount" INTEGER NOT NULL DEFAULT 0;
