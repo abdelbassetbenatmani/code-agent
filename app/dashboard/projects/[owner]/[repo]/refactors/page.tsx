@@ -2,9 +2,10 @@ import { getRepoRefactors } from "@/app/lib/actions/code";
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { RefreshCcw } from "lucide-react";
+import { ArrowLeft, RefreshCcw } from "lucide-react";
 import RefactorTable from "./_components/refactor-table";
 import Pagination from "@/components/utils/Pagination";
+import Link from "next/link";
 
 type RepoReviewsPageProps = {
   params: { owner: string; repo: string };
@@ -36,9 +37,18 @@ const RepoRefactorsPage = async ({
   return (
     <div className="container mx-auto py-6 px-4 md:px-6">
       <div className="mb-6">
-        <div className="flex items-center flex-wrap gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">{repo}</h1>
-          <span className="text-xl text-muted-foreground">/refactors</span>
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center flex-wrap gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">{repo}</h1>
+            <span className="text-xl text-muted-foreground">/refactors</span>
+          </div>
+          <Link
+            href="/dashboard"
+            className="text-sm text-primary hover:underline flex items-center gap-1"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Go to Dashboard
+          </Link>
         </div>
         <p className="text-muted-foreground mt-1">
           Repository code refactoring history for {owner}/{repo}
