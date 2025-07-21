@@ -9,7 +9,6 @@ import { fetchUserRepos } from "@/app/lib/actions/github";
 
 const DashboardContent = () => {
   const session = useSession();
-  console.log("Session Data:", session.data?.user);
 
   const {
     setProjects,

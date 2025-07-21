@@ -126,7 +126,6 @@ const ProjectDetailsPage = () => {
         },
       });
 
-      console.log("Review Result:", response.data);
       setReviewResult(response.data);
 
       // save the review to the database
@@ -177,7 +176,6 @@ const ProjectDetailsPage = () => {
         },
       })
       .then(async (response) => {
-        console.log("Refactored Code:", response.data);
         setRefactoredCode(response.data);
 
         // Save the refactored code to the database

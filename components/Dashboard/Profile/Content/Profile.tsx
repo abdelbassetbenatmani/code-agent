@@ -140,7 +140,6 @@ const Profile = () => {
 
             // Parse the string into an array
             const parsedLinks = JSON.parse(linksStr);
-            console.log("Parsed socialLinks:", parsedLinks);
 
             // Make sure we have an array
             if (Array.isArray(parsedLinks)) {
@@ -169,7 +168,6 @@ const Profile = () => {
           }
         }
 
-        console.log("User Data loaded");
       };
 
       getUserData();

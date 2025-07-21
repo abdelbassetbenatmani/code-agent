@@ -85,7 +85,6 @@ const ProjectsList = () => {
 
     try {
       await deleteRepoProject(Number(projectToDelete));
-      console.log("Project deleted successfully");
       deleteProject(projectToDelete);
       setIsDeleteDialogOpen(false);
       setProjectToDelete(null);

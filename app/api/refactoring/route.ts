@@ -107,7 +107,6 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("AI Response:", parsedResponse);
     
     return NextResponse.json(parsedResponse, { status: 200 });
   } catch (error) {

@@ -20,7 +20,6 @@ const Notifications = ({ notifications }: { notifications: Notification[] }) => 
   );
   const markAllAsRead = () => {
     setUnreadCount(0);
-    console.log("Marked all notifications as read");
   };
   return (
     <div>

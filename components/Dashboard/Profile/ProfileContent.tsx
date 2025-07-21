@@ -10,7 +10,6 @@ const ProfileContent = () => {
   const searchParams = useSearchParams();
 
   const tab = searchParams.get("tab");
-  console.log("Tab from search params:", tab);
 
   const validTabs = ["profile", "account", "appearance"] as const;
   const initialTab: "profile" | "account" | "appearance" =

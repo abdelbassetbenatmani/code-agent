@@ -64,7 +64,6 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log("AI Response:", completion.choices);
     const content =
       completion.choices &&
       completion.choices[0] &&

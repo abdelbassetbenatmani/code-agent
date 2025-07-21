@@ -197,7 +197,6 @@ const useStore = create<StoreState>()(
 
       getFilteredProjects: () => {
         const { projects, searchTerm, sortOption, selectedDate } = get();
-        console.log("Current Projects:", projects);
 
         // First, filter projects
         let filteredProjects = [...projects];
