@@ -39,3 +39,11 @@ export type Authenticator = Prisma.AuthenticatorGetPayload<object>;
 
 // VerificationToken type
 export type VerificationToken = Prisma.VerificationTokenGetPayload<object>;
+
+export type TeamType = Prisma.TeamGetPayload<object>;
+
+export type TeamMemberType = Prisma.TeamMemberGetPayload<{
+  include: {
+    user: true; // Include user details
+  };
+}>;

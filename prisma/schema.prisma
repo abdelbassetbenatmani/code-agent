@@ -24,6 +24,8 @@ model User {
 
 
   Repo Repo[]
+  Team Team[]
+  TeamMember TeamMember[]
 }
 
 model Account {
@@ -136,4 +138,34 @@ model CodeRefactor {
   updatedAt       DateTime @updatedAt
   userId          String
   
+}
+
+
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  icon        String
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@unique([name, ownerId])
+  members     TeamMember[]
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  userId    String
+  role      String   @default("member")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
 }

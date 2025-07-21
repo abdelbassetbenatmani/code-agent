@@ -1,12 +1,8 @@
 import {
-  User,
   Clock,
   Code,
   AlertCircle,
   CheckCircle2,
-  Users,
-  Building,
-  Laptop,
 } from "lucide-react";
 import Logo from "../../Logo";
 import TeamSwitcher from "./TeamSwitcher";
@@ -16,33 +12,6 @@ import UserDropdown from "./UserDropdown";
 import { auth } from "@/app/lib/auth";
 import { getUserProfile } from "@/app/lib/actions/user";
 
-// Sample teams data
-const teams = [
-  {
-    id: "1",
-    name: "Personal Account",
-    icon: <User className="h-4 w-4" />,
-    type: "personal",
-  },
-  {
-    id: "2",
-    name: "Acme Inc",
-    icon: <Building className="h-4 w-4" />,
-    type: "organization",
-  },
-  {
-    id: "3",
-    name: "Codiny Labs",
-    icon: <Laptop className="h-4 w-4" />,
-    type: "organization",
-  },
-  {
-    id: "4",
-    name: "Design Team",
-    icon: <Users className="h-4 w-4" />,
-    type: "team",
-  },
-];
 
 // Sample notifications for demonstration
 export interface Notification {
@@ -116,7 +85,7 @@ const DashboardHeader = async () => {
         {/* Left side - Logo, Team Switcher */}
         <div className="flex items-center gap-4">
           <Logo href="/dashboard" />
-          <TeamSwitcher teams={teams} />
+          <TeamSwitcher session={session} />
         </div>
 
         {/* Right side - Notifications, Theme Toggle and User Menu */}

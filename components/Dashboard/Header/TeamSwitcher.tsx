@@ -9,33 +9,63 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
-import {
-  Check,
-  ChevronsUpDown,
-  PlusCircle,
-  Users,
-  Search,
-  UserPlus,
-} from "lucide-react";
-import { JSX, useState } from "react";
-const TeamSwitcher = ({ teams }: { teams: Array<{ id: string; name: string; icon: JSX.Element }> }) => {
+import { Check, ChevronsUpDown, PlusCircle, Users, Search } from "lucide-react";
+import { useEffect, useState } from "react";
+import CreateTeam from "../Teams/CreateTeam";
+import useTeamStore from "@/lib/store/teams";
+import { Session } from "@/prisma/types";
+import { getTeams } from "@/app/lib/actions/teams";
+
+const TeamSwitcher = ({ session }: { session: Session }) => {
+  const { teams, setTeams } = useTeamStore();
   // State for team switcher
   const [selectedTeam, setSelectedTeam] = useState(teams[0]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Filter teams based on search
   const filteredTeams = searchQuery
     ? teams.filter((team) =>
-        team.name.toLowerCase().includes(searchQuery.toLowerCase()),
+        team.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : teams;
+
+  // fetch teams from store or session
+  useEffect(() => {
+    if (session?.userId) {
+      console.log("Session User ID:", session.userId);
+      
+      if (teams.length === 0) {
+        getTeams().then((fetchedTeams) => {
+          setTeams(fetchedTeams);
+          if (fetchedTeams.length > 0) {
+            console.log("Fetched Teams:", fetchedTeams);
+            
+            setSelectedTeam(fetchedTeams[0]);
+          }
+        });
+      } else if (
+        !selectedTeam ||
+        !teams.find((t) => t.id === selectedTeam.id)
+      ) {
+        setSelectedTeam(teams[0]);
+      }
+    }
+  }, [teams, session, setTeams, selectedTeam]);
+
   return (
     <div>
       {/* Team Switcher */}
@@ -49,10 +79,10 @@ const TeamSwitcher = ({ teams }: { teams: Array<{ id: string; name: string; icon
             className="hidden md:flex h-9 w-64 ml-3 justify-between text-sm font-medium transition-all"
           >
             <div className="flex items-center gap-2 truncate">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50">
+              {/* <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50">
                 {selectedTeam.icon}
-              </div>
-              <span className="truncate">{selectedTeam.name}</span>
+              </div> */}
+              {/* <span className="truncate">{selectedTeam.name}</span> */}
             </div>
             <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -106,17 +136,14 @@ const TeamSwitcher = ({ teams }: { teams: Array<{ id: string; name: string; icon
           <div className="p-1">
             <Button
               variant="ghost"
+              onClick={() => {
+                setIsDialogOpen(true);
+                setIsSearchOpen(false);
+              }}
               className="flex h-9 w-full items-center justify-start text-sm"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
               Create team
-            </Button>
-            <Button
-              variant="ghost"
-              className="flex h-9 w-full items-center justify-start text-sm"
-            >
-              <UserPlus className="mr-2 h-4 w-4" />
-              Join team
             </Button>
           </div>
         </PopoverContent>
@@ -131,9 +158,9 @@ const TeamSwitcher = ({ teams }: { teams: Array<{ id: string; name: string; icon
             className="md:hidden h-9 w-9 p-0"
             aria-label="Select a team"
           >
-            <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-accent/50">
+            {/* <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-accent/50">
               {selectedTeam.icon}
-            </div>
+            </div> */}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
@@ -157,16 +184,40 @@ const TeamSwitcher = ({ teams }: { teams: Array<{ id: string; name: string; icon
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setIsDialogOpen(true);
+              setIsSearchOpen(false);
+            }}
+          >
             <PlusCircle className="mr-2 h-4 w-4" />
             Create team
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Join team
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={(open) => {
+          setIsDialogOpen(open);
+          // Optional: Close dropdowns when dialog closes
+          if (!open) {
+            setIsSearchOpen(false);
+            setSearchQuery("");
+          }
+        }}
+      >
+        <DialogContent onClick={(e) => e.stopPropagation()}>
+          <DialogHeader>
+            <DialogTitle>Create a new team</DialogTitle>
+            <DialogDescription>
+              Add a new team to manage projects and collaborate with others.
+            </DialogDescription>
+          </DialogHeader>
+          {/* Add your form components here */}
+          <CreateTeam />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
