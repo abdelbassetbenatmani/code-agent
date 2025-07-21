@@ -39,11 +39,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { deleteRepoProject } from "@/app/lib/actions/github";
 import CreateProject from "./CreateProject";
+import { formatDistanceToNow } from "@/lib/formatDate";
 
 const ProjectsList = () => {
   const { viewMode, getFilteredProjects, deleteProject } = useStore();

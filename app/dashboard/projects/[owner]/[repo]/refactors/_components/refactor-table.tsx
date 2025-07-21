@@ -31,12 +31,12 @@ import {
   RefreshCcw,
   User,
 } from "lucide-react";
-import { format } from "date-fns";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
 import { coldarkDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { RefactoringType } from "@/prisma/types";
 import { getLanguage } from "../../_components/getLanguage";
 import ChangeBox from "@/components/utils/ChangeBox";
+import { formatDate } from "@/lib/formatDate";
 
 const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,7 +95,6 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
       {/* Refactorings Table */}
       <div className="rounded-md border">
         <Table>
-        
           <TableHeader>
             <TableRow>
               <TableHead className="w-[180px]">File</TableHead>
@@ -133,7 +132,7 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
                     </p>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">
-                    {format(new Date(refactor.createdAt), "MMM dd, yyyy")}
+                    {formatDate(refactor.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Sheet>
@@ -158,7 +157,7 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
                             <SheetDescription className="flex flex-wrap gap-2 items-center">
                               <Badge variant="outline">{refactor.path}</Badge>
                               <Badge variant="secondary">
-                                {format(new Date(refactor.createdAt), "PPp")}
+                                {formatDate(refactor.createdAt)}
                               </Badge>
                             </SheetDescription>
                           </SheetHeader>
@@ -304,8 +303,7 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
                             <div className="pt-4 border-t">
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
-                                Created:{" "}
-                                {format(new Date(refactor.createdAt), "PPpp")}
+                                Created: {formatDate(refactor.createdAt)}
                               </div>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
                                 <User className="h-4 w-4" />

@@ -30,8 +30,9 @@ import {
   ChevronRight,
   User,
 } from "lucide-react";
-import { format } from "date-fns";
 import IssueCard from "@/components/utils/IssueCard";
+import { formatDate } from "@/lib/formatDate";
+
 
 const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -135,7 +136,7 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">
-                    {format(new Date(review.createdAt), "MMM dd, yyyy")}
+                    {formatDate(review.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
                     <Sheet>
@@ -216,7 +217,7 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
                               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
                                 Created:{" "}
-                                {format(new Date(review.createdAt), "PPpp")}
+                                {formatDate(review.createdAt)}
                               </div>
                               <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
                                 <User className="h-4 w-4" />
