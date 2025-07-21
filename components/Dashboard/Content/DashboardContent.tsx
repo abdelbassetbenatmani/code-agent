@@ -23,32 +23,36 @@ const DashboardContent = () => {
 
   // Fetch projects on component mount
   useEffect(() => {
-    fetchUserRepos(session.data?.user?.id || "default-user-id") // Replace with actual user ID
-      .then((repos) => {
-        // map repos to projects format
-        const projects: Project[] = repos.map((repo) => ({
-          id: repo.id.toString(),
-          name: repo.name,
-          owner: repo.ownerLogin,
-          description: repo.description || "",
-          createdAt: repo.createdAt,
-          lastUpdated: repo.updatedAt,
-          status: repo.private ? "private" : "public",
-          languages: repo.language ? [repo.language] : [],
-          reviewCount: repo.reviewCount || 0,
-          refactorCount: repo.refactorCount || 0,
-        }));
+    // Only fetch repos when session is loaded and we have a user ID
+    if (session.status === "authenticated" && session.data?.user?.id) {
+      const userId = session.data.user.id;
 
-        return setProjects(projects);
-      })
-      .catch((err) => {
-        console.log("Error fetching repos:", err);
-      });
+
+      fetchUserRepos(userId)
+        .then((repos) => {
+          // map repos to projects format
+          const projects: Project[] = repos.map((repo) => ({
+            id: repo.id.toString(),
+            name: repo.name,
+            owner: repo.ownerLogin,
+            description: repo.description || "",
+            createdAt: repo.createdAt,
+            lastUpdated: repo.updatedAt,
+            status: repo.private ? "private" : "public",
+            languages: repo.language ? [repo.language] : [],
+            reviewCount: repo.reviewCount || 0,
+            refactorCount: repo.refactorCount || 0,
+          }));
+
+          setProjects(projects);
+        })
+        .catch((err) => {
+          console.error("Error fetching repos:", err);
+        })
+        
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    session.data?.user?.id, // Ensure to use the actual user ID from session
-    // fetchProjects, // Uncomment if you want to use the store's fetchProjects method
-  ]);
+  }, [session.status, session.data?.user?.id]);
 
   return (
     <div className="container mx-auto px-4 pt-8 lg:pt-12">
