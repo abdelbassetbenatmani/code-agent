@@ -105,7 +105,6 @@ export async function saveRefactorCode(
       summary,
       changes: formatedChanges ?? null,
     },
-
   });
 
   if (refactorResponse) {
@@ -128,37 +127,72 @@ export async function saveRefactorCode(
   revalidatePath(`/dashboard`);
 }
 
-
 export async function getRepoReviews(
   ownerLogin: string,
-  repoName: string
-): Promise<ReviewType[]> {
-  const reviews = await prisma.codeReview.findMany({
-    where: {
-      repoOwner: ownerLogin,
-      repoName: repoName,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  repoName: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ reviews: ReviewType[]; totalCount: number }> {
+  const skip = (page - 1) * limit;
 
-  return reviews;
+  
+
+  const [reviews, totalCount] = await Promise.all([
+    prisma.codeReview.findMany({
+      where: {
+        repoOwner: ownerLogin,
+        repoName: repoName,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.codeReview.count({
+      where: {
+        repoOwner: ownerLogin,
+        repoName: repoName,
+      },
+    }),
+  ]);
+
+  return {
+    reviews,
+    totalCount,
+  };
 }
 
 export async function getRepoRefactors(
   ownerLogin: string,
-  repoName: string
-): Promise<RefactoringType[]> {
-  const refactors = await prisma.codeRefactor.findMany({
-    where: {
-      repoOwner: ownerLogin,
-      repoName: repoName,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  repoName: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<{ refactors: RefactoringType[]; totalCount: number }> {
+  const skip = (page - 1) * limit;
 
-  return refactors;
+  const [refactors, totalCount] = await Promise.all([
+    prisma.codeRefactor.findMany({
+      where: {
+        repoOwner: ownerLogin,
+        repoName: repoName,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.codeRefactor.count({
+      where: {
+        repoOwner: ownerLogin,
+        repoName: repoName,
+      },
+    }),
+  ]);
+
+  return {
+    refactors,
+    totalCount,
+  };
 }

@@ -15,7 +15,6 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -98,11 +97,7 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
       {/* Reviews Table */}
       <div className="rounded-md border">
         <Table>
-          <TableCaption>
-            {filteredReviews.length === 0
-              ? "No reviews found"
-              : `Showing ${filteredReviews.length} of ${reviews.length} reviews`}
-          </TableCaption>
+         
           <TableHeader>
             <TableRow>
               <TableHead className="w-[180px]">File</TableHead>

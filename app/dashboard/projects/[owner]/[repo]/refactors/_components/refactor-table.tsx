@@ -14,7 +14,6 @@ import {
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -96,11 +95,7 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
       {/* Refactorings Table */}
       <div className="rounded-md border">
         <Table>
-          <TableCaption>
-            {filteredRefactors.length === 0
-              ? "No refactorings found"
-              : `Showing ${filteredRefactors.length} of ${refactors.length} refactorings`}
-          </TableCaption>
+        
           <TableHeader>
             <TableRow>
               <TableHead className="w-[180px]">File</TableHead>
