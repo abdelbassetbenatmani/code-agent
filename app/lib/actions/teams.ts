@@ -15,6 +15,21 @@ export async function getTeams() {
   }
 }
 
+export async function getOwnedTeams(userId: string) {
+  try {
+    const teams = await prisma.team.findMany({
+      where: {
+        ownerId: userId,
+      },
+    });
+
+    return teams as TeamType[];
+  } catch (error) {
+    console.error("Error fetching owned teams:", error);
+    throw new Error("Failed to fetch owned teams");
+  }
+}
+
 interface CreateTeamParams {
   name: string;
   icon: string;

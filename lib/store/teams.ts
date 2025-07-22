@@ -6,6 +6,8 @@ interface TeamState {
   teamId: string | null;
   setTeamId: (teamId: string | null) => void;
   setTeams: (teams: TeamType[]) => void;
+  setOwnedTeams: (ownedTeams: TeamType[]) => void;
+  ownedTeams: TeamType[];
   addTeam: (team: TeamType) => void;
   removeTeam: (teamId: string) => void;
   updateTeam: (
@@ -25,10 +27,16 @@ const useTeamStore = create<TeamState>()(
     (set) => ({
       teamId: null,
       teams: [],
+      ownedTeams: [],
+      setOwnedTeams: (ownedTeams) => set({ ownedTeams }),
 
       setTeamId: (teamId) => set({ teamId }),
       setTeams: (teams) => set({ teams }),
-      addTeam: (team) => set((state) => ({ teams: [...state.teams, team] })),
+      addTeam: (team) =>
+        set((state) => ({
+          teams: [...state.teams, team],
+          ownedTeams: [...state.ownedTeams, team],
+        })),
       removeTeam: (teamId) =>
         set((state) => ({
           teams: state.teams.filter((team) => team.id !== teamId),
