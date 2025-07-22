@@ -1,17 +1,23 @@
+import { TeamType } from "@/prisma/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 interface TeamState {
   teamId: string | null;
   setTeamId: (teamId: string | null) => void;
-  setTeams: (teams: { id: string; name: string; icon: string }[]) => void;
-  addTeam: (team: { id: string; name: string; icon: string }) => void;
+  setTeams: (teams: TeamType[]) => void;
+  addTeam: (team: TeamType) => void;
   removeTeam: (teamId: string) => void;
   updateTeam: (
     teamId: string,
-    updatedTeam: Partial<{ id: string; name: string; icon: string }>
+    updatedTeam: Partial<{
+      id: string;
+      name: string;
+      icon: string;
+      description: string;
+    }>
   ) => void;
-  teams: { id: string; name: string; icon: string }[];
+  teams: TeamType[];
 }
 
 const useTeamStore = create<TeamState>()(

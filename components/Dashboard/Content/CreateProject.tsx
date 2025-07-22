@@ -23,11 +23,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertCircle, Github, Loader2, RefreshCcw } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
-import { addRepoToProject, fetchRepos, fetchUserRepos } from "@/app/lib/actions/github";
+import {
+  addRepoToProject,
+  fetchRepos,
+  fetchUserRepos,
+} from "@/app/lib/actions/github";
 import { useSession } from "next-auth/react";
 import useStore from "@/lib/store/store";
-
-
+import useTeamStore from "@/lib/store/teams";
 
 const CreateProject = ({
   onOpenChange,
@@ -49,6 +52,7 @@ const CreateProject = ({
 
   // Get addProject function from store
   const { addProject } = useStore();
+  const { teamId } = useTeamStore();
 
   useEffect(() => {
     fetchGithubRepos();
@@ -72,7 +76,7 @@ const CreateProject = ({
     try {
       const [reposResponse, existingProjectsResponse] = await Promise.all([
         fetchRepos(session?.data?.accessToken || ""),
-        fetchUserRepos(session?.data?.user?.id || "")
+        fetchUserRepos(session?.data?.user?.id || ""),
       ]);
 
       setExistingProjects(existingProjectsResponse);
@@ -112,6 +116,7 @@ const CreateProject = ({
       await addRepoToProject(
         selectedRepoDetails,
         session?.data?.user?.id ?? "",
+        teamId,
         projectDescription || ""
       );
 
@@ -129,7 +134,11 @@ const CreateProject = ({
         lastUpdated: selectedRepoDetails?.updated_at || "",
         status: "active",
         owner: session?.data?.user?.name || "Unknown",
-        languages: selectedRepoDetails?.language ? [selectedRepoDetails.language] : ["No language detected"],
+        languages: selectedRepoDetails?.language
+          ? [selectedRepoDetails.language]
+          : ["No language detected"],
+        refactorCount: 0,
+        reviewCount: 0,
       });
 
       // Reset the form
@@ -146,7 +155,6 @@ const CreateProject = ({
 
   return (
     <div className="container mx-auto  py-8">
-      {/* <Card className="max-w-2xl mx-auto"> */}
       <CardHeader>
         <CardTitle className="text-2xl">Create New Project</CardTitle>
         <CardDescription>
@@ -184,16 +192,24 @@ const CreateProject = ({
                 <SelectGroup>
                   <SelectLabel>Your repositories</SelectLabel>
                   {repos.map((repo) => {
-                    const alreadyAdded = existingProjects.some((project: any) => project.id === repo.id);
+                    const alreadyAdded = existingProjects.some(
+                      (project: any) => project.id === repo.id
+                    );
                     return (
-                      <SelectItem key={repo.id} value={repo.full_name} disabled={alreadyAdded}>
+                      <SelectItem
+                        key={repo.id}
+                        value={repo.full_name}
+                        disabled={alreadyAdded}
+                      >
                         <div className="flex items-center">
                           <span className="truncate">{repo.name}</span>
                           <span className="ml-1 text-xs text-muted-foreground">
                             ({repo.language || "No language"})
                           </span>
                           {alreadyAdded && (
-                            <span className="ml-2 text-xs text-red-500">Already added</span>
+                            <span className="ml-2 text-xs text-red-500">
+                              Already added
+                            </span>
                           )}
                         </div>
                       </SelectItem>
@@ -226,6 +242,7 @@ const CreateProject = ({
               id="project-name"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
+              disabled={true}
               required
             />
           </div>
@@ -274,7 +291,7 @@ const CreateProject = ({
           </Button>
         </CardFooter>
       </form>
-      {/* </Card> */}
+
     </div>
   );
 };

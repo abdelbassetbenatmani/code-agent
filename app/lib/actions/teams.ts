@@ -15,12 +15,19 @@ export async function getTeams() {
   }
 }
 
-export async function createTeam(
-  name: string,
-  icon: string,
-  userId: string,
-  description?: string
-) {
+interface CreateTeamParams {
+  name: string;
+  icon: string;
+  userId: string;
+  description?: string;
+}
+
+export async function createTeam({
+  name,
+  icon,
+  userId,
+  description = "",
+}: CreateTeamParams) {
   try {
     const team = await prisma.team.create({
       data: {

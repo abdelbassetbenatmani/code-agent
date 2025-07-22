@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 export const addRepoToProject = async (
   githubRepo: any,
   currentUserId: string,
+  teamId: string | null,
   description: string
 ) => {
   await prisma.repo.upsert({
@@ -32,6 +33,10 @@ export const addRepoToProject = async (
       forksCount: githubRepo.forks_count,
       openIssuesCount: githubRepo.open_issues_count,
       userId: currentUserId, // your local user id
+      teamId: teamId || null, // optional team id
+      reviewCount: 0, // default value
+      refactorCount: 0, // default value
+      
     },
   });
 };

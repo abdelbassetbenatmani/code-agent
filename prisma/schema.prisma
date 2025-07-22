@@ -100,12 +100,14 @@ model Repo {
   forksCount      Int
   openIssuesCount Int
   userId          String?
+  teamId          String?
 
   reviewCount     Int         @default(0)
   refactorCount   Int         @default(0)
   
   @@unique([ownerLogin, name])
   user            User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team            Team?       @relation(fields: [teamId], references: [id], onDelete: Cascade)
 }
 
 model CodeReview {
@@ -154,6 +156,7 @@ model Team {
 
   @@unique([name, ownerId])
   members     TeamMember[]
+  repos       Repo[]
 }
 
 model TeamMember {

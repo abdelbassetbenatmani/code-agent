@@ -31,7 +31,7 @@ import { getIconComponent } from "@/components/utils/getTeamIcon";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 
 const TeamSwitcher = ({ session }: { session: Session }) => {
-  const { teams, setTeams } = useTeamStore();
+  const { teams, setTeams, setTeamId } = useTeamStore();
   // State for team switcher
   const [selectedTeam, setSelectedTeam] = useState(teams[0]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -60,10 +60,11 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
         if (fetchedTeams.length > 0) {
           setTeams(fetchedTeams);
           setSelectedTeam(fetchedTeams[0]);
+          setTeamId(fetchedTeams[0].id);
         }
       });
     }
-  }, [session, setTeams]); // Only re-run when session or setTeams changes
+  }, [session, setTeams, setTeamId]); // Only re-run when session or setTeams changes
 
   return (
     <div>
@@ -105,19 +106,22 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
                   <Button
                     key={team.id}
                     variant="ghost"
-                    className="flex h-9 w-full items-center justify-start text-sm"
+                    className="flex h-9 w-full items-center justify-between text-sm"
                     onClick={() => {
                       setSelectedTeam(team);
+                      setTeamId(team.id);
                       setIsSearchOpen(false);
                       setSearchInputValue("");
                     }}
                   >
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 mr-2">
-                      {getIconComponent(team.icon)}
+                    <div className="flex items-center min-w-0">
+                      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 mr-2">
+                        {getIconComponent(team.icon)}
+                      </div>
+                      <span className="truncate">{team.name}</span>
                     </div>
-                    <span className="truncate">{team.name}</span>
                     {selectedTeam?.id === team.id && (
-                      <Check className="ml-auto h-4 w-4" />
+                      <Check className="h-4 w-4 shrink-0 ml-2" />
                     )}
                   </Button>
                 ))}
@@ -215,7 +219,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
               Add a new team to manage projects and collaborate with others.
             </DialogDescription>
           </DialogHeader>
-          <CreateTeam />
+          <CreateTeam setIsDialogOpen={setIsDialogOpen} />
         </DialogContent>
       </Dialog>
     </div>

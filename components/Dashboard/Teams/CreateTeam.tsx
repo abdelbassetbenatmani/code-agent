@@ -28,16 +28,36 @@ import {
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
+import { createTeam } from "@/app/lib/actions/teams";
+import { useSession } from "next-auth/react";
+import useTeamStore from "@/lib/store/teams";
 
 // Define the form schema
 const teamFormSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(2, "Team name must be at least 2 characters")
     .max(50, "Team name cannot exceed 50 characters"),
-  icon: z.enum(["code", "chart", "settings", "file", "shapes", "pen", "gauge", "users", "sparkles"], {
-    required_error: "Please select a team icon",
-  }),
-  description: z.string().max(200, "Description cannot exceed 200 characters").optional(),
+  icon: z.enum(
+    [
+      "code",
+      "chart",
+      "settings",
+      "file",
+      "shapes",
+      "pen",
+      "gauge",
+      "users",
+      "sparkles",
+    ],
+    {
+      required_error: "Please select a team icon",
+    }
+  ),
+  description: z
+    .string()
+    .max(200, "Description cannot exceed 200 characters")
+    .optional(),
 });
 
 type TeamFormValues = z.infer<typeof teamFormSchema>;
@@ -55,7 +75,15 @@ const teamIcons = [
   { value: "sparkles", icon: <Sparkles className="h-5 w-5" /> },
 ];
 
-const CreateTeam = () => {
+const CreateTeam = ({
+  setIsDialogOpen,
+}: {
+  setIsDialogOpen: (open: boolean) => void;
+}) => {
+  const session = useSession();
+
+  const { addTeam } = useTeamStore();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<TeamFormValues>({
@@ -69,17 +97,31 @@ const CreateTeam = () => {
 
   async function onSubmit(data: TeamFormValues) {
     setIsSubmitting(true);
-    
+
     try {
       // Replace with your actual API call to create team
-      // await createTeam(data);
-      
-      console.log("Team created:", data);
-      toast.success("Team created successfully!");
-      
+      const response = await createTeam({
+        name: data.name,
+        icon: data.icon,
+        userId: session?.data?.user?.id as string,
+        description: data.description,
+      });
+      // Add the new team to the store
+      addTeam({
+        id: response.id,
+        name: response.name,
+        icon: response.icon,
+        description: response.description,
+        createdAt: response.createdAt,
+        updatedAt: response.updatedAt,
+        ownerId: response.ownerId,
+      });
+
       // Reset the form
       form.reset();
-      
+
+      setIsDialogOpen(false);
+
       // Close the dialog (if needed)
       // You might want to use a callback prop to close the dialog
     } catch (error) {
