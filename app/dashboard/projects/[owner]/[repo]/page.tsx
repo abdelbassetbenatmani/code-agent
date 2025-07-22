@@ -138,6 +138,7 @@ const ProjectDetailsPage = () => {
 
         await saveReviewCode(
           data.user.id,
+          data?.user?.name as string,
           {
             name: repo as string,
             ownerLogin: owner as string,
@@ -188,6 +189,7 @@ const ProjectDetailsPage = () => {
 
           await saveRefactorCode(
             data.user.id,
+            data?.user?.name as string,
             {
               name: repo as string,
               ownerLogin: owner as string,

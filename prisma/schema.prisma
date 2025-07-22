@@ -114,6 +114,7 @@ model CodeReview {
   id        String      @id
   repoName  String
   repoOwner String
+  reviewer  String     @default("A")
   file      String
   code      String
   path      String     @default("")
@@ -130,6 +131,7 @@ model CodeRefactor {
   id              String      @id
   repoName        String
   repoOwner       String
+  refactorer      String    @default("A")
   file            String
   code            String
   path            String     @default("")

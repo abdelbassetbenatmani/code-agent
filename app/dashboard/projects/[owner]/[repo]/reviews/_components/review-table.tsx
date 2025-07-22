@@ -23,23 +23,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Search,
-  FileCode,
-  Calendar,
-  ChevronRight,
-  User,
-} from "lucide-react";
+import { Search, FileCode, Calendar, ChevronRight, User } from "lucide-react";
 import IssueCard from "@/components/utils/IssueCard";
 import { formatDate } from "@/lib/formatDate";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 
-
 const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
+  console.log("Reviews data:", reviews);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredReviews, setFilteredReviews] = useState<ReviewType[]>(reviews);
   const [selectedReview, setSelectedReview] = useState<ReviewType | null>(null);
-
 
   const debouncedSearchQuery = useDebounce<string>(searchQuery, 300);
 
@@ -52,7 +46,9 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
 
     const filtered = reviews.filter(
       (review) =>
-        review.file.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        review.file
+          .toLowerCase()
+          .includes(debouncedSearchQuery.toLowerCase()) ||
         review.path.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     );
     setFilteredReviews(filtered);
@@ -73,8 +69,6 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
     if (parts.length <= 2) return path;
     return `.../${parts.slice(-2).join("/")}`;
   };
-
- 
 
   return (
     <div className="space-y-4">
@@ -102,12 +96,12 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
       {/* Reviews Table */}
       <div className="rounded-md border">
         <Table>
-         
           <TableHeader>
             <TableRow>
               <TableHead className="w-[180px]">File</TableHead>
               <TableHead className="hidden md:table-cell">Path</TableHead>
               <TableHead className="w-[100px] text-center">Score</TableHead>
+              <TableHead className="hidden md:table-cell">Reviewer</TableHead>
               <TableHead className="hidden md:table-cell">Created</TableHead>
               <TableHead className="w-[100px] text-right">Actions</TableHead>
             </TableRow>
@@ -140,6 +134,9 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
                     </Badge>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {review.reviewer}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
                     {formatDate(review.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -169,6 +166,20 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
                                 Score: {review.score}/100
                               </Badge>
                             </SheetDescription>
+                            <div className="mt-2 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <User className="h-4 w-4" />
+                                {review.reviewer}
+                              </span>
+                              <span className="flex items-center gap-1 mt-1">
+                                <Calendar className="h-4 w-4" />
+                                {formatDate(review.createdAt)}
+                              </span>
+                              <span className="flex items-center gap-1 mt-1">
+                                <User className="h-4 w-4" />
+                                {review.userId.substring(0, 8)}...
+                              </span>
+                            </div>
                           </SheetHeader>
 
                           <div className="py-6 space-y-6">
@@ -216,18 +227,7 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
                               </div>
                             </div>
 
-                            {/* Metadata */}
-                            <div className="pt-4 border-t">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                Created:{" "}
-                                {formatDate(review.createdAt)}
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                                <User className="h-4 w-4" />
-                                User ID: {review.userId.substring(0, 8)}...
-                              </div>
-                            </div>
+                         
                           </div>
 
                           <SheetFooter>

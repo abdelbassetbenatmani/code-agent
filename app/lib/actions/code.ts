@@ -20,6 +20,7 @@ interface Review {
 
 export async function saveReviewCode(
   currentUserId: string,
+  reviewer: string,
   selectedRepoDetails: RepoDetails,
   fileName: string,
   review: Review,
@@ -42,6 +43,7 @@ export async function saveReviewCode(
       userId: currentUserId,
       repoName: selectedRepoDetails.name,
       repoOwner: selectedRepoDetails.ownerLogin,
+      reviewer: reviewer,
       file: fileName,
       code: fileContent,
       path: selectedRepoDetails.path || "",
@@ -75,6 +77,7 @@ export async function saveReviewCode(
 
 export async function saveRefactorCode(
   currentUserId: string,
+  refactorer: string,
   selectedRepoDetails: RepoDetails,
   fileName: string,
   refactorCode: string,
@@ -98,6 +101,7 @@ export async function saveRefactorCode(
       userId: currentUserId,
       repoName: selectedRepoDetails.name,
       repoOwner: selectedRepoDetails.ownerLogin,
+      refactorer: refactorer,
       file: fileName,
       code: originalCode,
       path: selectedRepoDetails.path || "",

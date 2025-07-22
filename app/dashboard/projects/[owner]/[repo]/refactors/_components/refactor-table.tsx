@@ -100,6 +100,7 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
               <TableHead className="w-[180px]">File</TableHead>
               <TableHead className="hidden md:table-cell">Path</TableHead>
               <TableHead className="hidden md:table-cell">Summary</TableHead>
+              <TableHead className="hidden md:table-cell">Refactorer</TableHead>
               <TableHead className="hidden md:table-cell">Created</TableHead>
               <TableHead className="w-[100px] text-right">Actions</TableHead>
             </TableRow>
@@ -132,6 +133,9 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
                     </p>
                   </TableCell>
                   <TableCell className="hidden md:table-cell text-muted-foreground">
+                    {refactor.refactorer}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell text-muted-foreground">
                     {formatDate(refactor.createdAt)}
                   </TableCell>
                   <TableCell className="text-right">
@@ -160,6 +164,20 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
                                 {formatDate(refactor.createdAt)}
                               </Badge>
                             </SheetDescription>
+                            <div className="mt-2 text-sm text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <User className="h-4 w-4" />
+                                {refactor.refactorer}
+                              </span>
+                              <span className="flex items-center gap-1 mt-1">
+                                <Calendar className="h-4 w-4" />
+                                {formatDate(refactor.createdAt)}
+                              </span>
+                              <span className="flex items-center gap-1 mt-1">
+                                <User className="h-4 w-4" />
+                                {refactor.userId.substring(0, 8)}...
+                              </span>
+                            </div>
                           </SheetHeader>
 
                           <div className="py-6 space-y-6">
@@ -297,18 +315,6 @@ const RefactorTable = ({ refactors }: { refactors: RefactoringType[] }) => {
                                   </div>
                                 </TabsContent>
                               </Tabs>
-                            </div>
-
-                            {/* Metadata */}
-                            <div className="pt-4 border-t">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                Created: {formatDate(refactor.createdAt)}
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-                                <User className="h-4 w-4" />
-                                User ID: {refactor.userId.substring(0, 8)}...
-                              </div>
                             </div>
                           </div>
 
