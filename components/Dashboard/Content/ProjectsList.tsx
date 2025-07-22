@@ -256,7 +256,7 @@ const ProjectsList = () => {
                     <div className="flex items-center justify-center mb-1">
                       <Eye className="h-3 w-3 mr-1 text-blue-500" />
                       <span className="text-muted-foreground">
-                        {project.reviewCount}
+                        {project.reviewCount || 0}
                       </span>
                     </div>
                     <span className="text-[10px] text-muted-foreground/70">
@@ -268,7 +268,7 @@ const ProjectsList = () => {
                     <div className="flex items-center justify-center mb-1">
                       <RefreshCcw className="h-3 w-3 mr-1 text-purple-500" />
                       <span className="text-muted-foreground">
-                        {project.refactorCount}
+                        {project.refactorCount || 0}
                       </span>
                     </div>
                     <span className="text-[10px] text-muted-foreground/70">

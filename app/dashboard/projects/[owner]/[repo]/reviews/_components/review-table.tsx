@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import IssueCard from "@/components/utils/IssueCard";
 import { formatDate } from "@/lib/formatDate";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 
 
 const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
@@ -39,20 +40,23 @@ const ReviewsTable = ({ reviews }: { reviews: ReviewType[] }) => {
   const [filteredReviews, setFilteredReviews] = useState<ReviewType[]>(reviews);
   const [selectedReview, setSelectedReview] = useState<ReviewType | null>(null);
 
+
+  const debouncedSearchQuery = useDebounce<string>(searchQuery, 300);
+
   // Filter reviews when search query changes
   useEffect(() => {
-    if (!searchQuery) {
+    if (!debouncedSearchQuery) {
       setFilteredReviews(reviews);
       return;
     }
 
     const filtered = reviews.filter(
       (review) =>
-        review.file.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        review.path.toLowerCase().includes(searchQuery.toLowerCase())
+        review.file.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        review.path.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
     );
     setFilteredReviews(filtered);
-  }, [searchQuery, reviews]);
+  }, [debouncedSearchQuery, reviews]);
 
   // Get badge color based on score
   const getScoreBadgeColor = (score: number) => {

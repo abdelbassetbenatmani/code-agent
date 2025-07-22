@@ -28,21 +28,30 @@ import useTeamStore from "@/lib/store/teams";
 import { Session } from "@/prisma/types";
 import { getTeams } from "@/app/lib/actions/teams";
 import { getIconComponent } from "@/components/utils/getTeamIcon";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 
 const TeamSwitcher = ({ session }: { session: Session }) => {
   const { teams, setTeams } = useTeamStore();
   // State for team switcher
   const [selectedTeam, setSelectedTeam] = useState(teams[0]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInputValue, setSearchInputValue] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Filter teams based on search
-  const filteredTeams = searchQuery
+  // Apply debounce to search input (300ms delay)
+  const debouncedSearchQuery = useDebounce<string>(searchInputValue, 300);
+
+  // Filter teams based on debounced search
+  const filteredTeams = debouncedSearchQuery
     ? teams.filter((team) =>
-        team.name.toLowerCase().includes(searchQuery.toLowerCase())
+        team.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
       )
     : teams;
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInputValue(e.target.value);
+  };
 
   // fetch teams from store or session
   useEffect(() => {
@@ -55,9 +64,6 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
       });
     }
   }, [session, setTeams]); // Only re-run when session or setTeams changes
-
-  console.log(selectedTeam);
-  console.log("Teams:", teams);
 
   return (
     <div>
@@ -73,9 +79,9 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
           >
             <div className="flex items-center gap-2 truncate">
               <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 mr-2">
-                {getIconComponent(selectedTeam.icon)}
+                {selectedTeam && getIconComponent(selectedTeam.icon)}
               </div>
-              <span className="truncate">{selectedTeam.name}</span>
+              <span className="truncate">{selectedTeam?.name}</span>
             </div>
             <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -87,8 +93,8 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
               <Input
                 placeholder="Search team..."
                 className="h-8 border-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchInputValue}
+                onChange={handleSearchChange}
               />
             </div>
           </div>
@@ -103,14 +109,14 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
                     onClick={() => {
                       setSelectedTeam(team);
                       setIsSearchOpen(false);
-                      setSearchQuery("");
+                      setSearchInputValue("");
                     }}
                   >
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 mr-2">
                       {getIconComponent(team.icon)}
                     </div>
                     <span className="truncate">{team.name}</span>
-                    {selectedTeam.id === team.id && (
+                    {selectedTeam?.id === team.id && (
                       <Check className="ml-auto h-4 w-4" />
                     )}
                   </Button>
@@ -120,7 +126,9 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
               <div className="flex flex-col items-center justify-center py-6 px-2">
                 <Users className="h-10 w-10 text-muted-foreground mb-2" />
                 <p className="text-sm text-center text-muted-foreground">
-                  No teams found
+                  {debouncedSearchQuery
+                    ? "No matching teams found"
+                    : "No teams available"}
                 </p>
               </div>
             )}
@@ -142,7 +150,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
         </PopoverContent>
       </Popover>
 
-      {/* Mobile team switcher */}
+      {/* Mobile team switcher remains the same */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -152,7 +160,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
             aria-label="Select a team"
           >
             <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 ">
-              {getIconComponent(selectedTeam.icon)}
+              {selectedTeam && getIconComponent(selectedTeam.icon)}
             </div>
           </Button>
         </DropdownMenuTrigger>
@@ -171,7 +179,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
                 </div>
                 <span>{team.name}</span>
               </div>
-              {selectedTeam.id === team.id && (
+              {selectedTeam?.id === team.id && (
                 <Check className="ml-auto h-4 w-4" />
               )}
             </DropdownMenuItem>
@@ -196,7 +204,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
           // Optional: Close dropdowns when dialog closes
           if (!open) {
             setIsSearchOpen(false);
-            setSearchQuery("");
+            setSearchInputValue("");
           }
         }}
       >
@@ -207,7 +215,6 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
               Add a new team to manage projects and collaborate with others.
             </DialogDescription>
           </DialogHeader>
-          {/* Add your form components here */}
           <CreateTeam />
         </DialogContent>
       </Dialog>
