@@ -4,12 +4,10 @@ import ProjectsList from "./ProjectsList";
 import FilterBar from "./FilterBar";
 import useStore, { Project } from "@/lib/store/store";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useSession } from "next-auth/react";
-import { fetchUserRepos } from "@/app/lib/actions/github";
+import { fetchTeamRepos } from "@/app/lib/actions/github";
+import useTeamStore from "@/lib/store/teams";
 
 const DashboardContent = () => {
-  const session = useSession();
-
   const {
     setProjects,
     isLoading,
@@ -20,14 +18,12 @@ const DashboardContent = () => {
     setSelectedDate,
   } = useStore();
 
+  const { teamId } = useTeamStore();
   // Fetch projects on component mount
   useEffect(() => {
     // Only fetch repos when session is loaded and we have a user ID
-    if (session.status === "authenticated" && session.data?.user?.id) {
-      const userId = session.data.user.id;
-
-
-      fetchUserRepos(userId)
+    if (teamId) {
+      fetchTeamRepos(teamId as string)
         .then((repos) => {
           // map repos to projects format
           const projects: Project[] = repos.map((repo) => ({
@@ -47,11 +43,10 @@ const DashboardContent = () => {
         })
         .catch((err) => {
           console.error("Error fetching repos:", err);
-        })
-        
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session.status, session.data?.user?.id]);
+  }, [teamId]);
 
   return (
     <div className="container mx-auto px-4 pt-8 lg:pt-12">

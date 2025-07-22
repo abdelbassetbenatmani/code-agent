@@ -36,7 +36,7 @@ export const addRepoToProject = async (
       teamId: teamId || null, // optional team id
       reviewCount: 0, // default value
       refactorCount: 0, // default value
-      
+
     },
   });
 };
@@ -50,6 +50,15 @@ export const deleteRepoProject = async (projectId: number) => {
 export const fetchUserRepos = async (userId: string) => {
   const repos = await prisma.repo.findMany({
     where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return repos;
+};
+
+export const fetchTeamRepos = async (teamId: string) => {
+  const repos = await prisma.repo.findMany({
+    where: { teamId },
     orderBy: { createdAt: "desc" },
   });
 
