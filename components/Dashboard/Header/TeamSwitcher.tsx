@@ -27,6 +27,7 @@ import CreateTeam from "../Teams/CreateTeam";
 import useTeamStore from "@/lib/store/teams";
 import { Session } from "@/prisma/types";
 import { getTeams } from "@/app/lib/actions/teams";
+import { getIconComponent } from "@/components/utils/getTeamIcon";
 
 const TeamSwitcher = ({ session }: { session: Session }) => {
   const { teams, setTeams } = useTeamStore();
@@ -45,26 +46,18 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
 
   // fetch teams from store or session
   useEffect(() => {
-    if (session?.userId) {
-      console.log("Session User ID:", session.userId);
-      
-      if (teams.length === 0) {
-        getTeams().then((fetchedTeams) => {
+    if (session) {
+      getTeams().then((fetchedTeams) => {
+        if (fetchedTeams.length > 0) {
           setTeams(fetchedTeams);
-          if (fetchedTeams.length > 0) {
-            console.log("Fetched Teams:", fetchedTeams);
-            
-            setSelectedTeam(fetchedTeams[0]);
-          }
-        });
-      } else if (
-        !selectedTeam ||
-        !teams.find((t) => t.id === selectedTeam.id)
-      ) {
-        setSelectedTeam(teams[0]);
-      }
+          setSelectedTeam(fetchedTeams[0]);
+        }
+      });
     }
-  }, [teams, session, setTeams, selectedTeam]);
+  }, [session, setTeams]); // Only re-run when session or setTeams changes
+
+  console.log(selectedTeam);
+  console.log("Teams:", teams);
 
   return (
     <div>
@@ -79,10 +72,10 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
             className="hidden md:flex h-9 w-64 ml-3 justify-between text-sm font-medium transition-all"
           >
             <div className="flex items-center gap-2 truncate">
-              {/* <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50">
-                {selectedTeam.icon}
-              </div> */}
-              {/* <span className="truncate">{selectedTeam.name}</span> */}
+              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 mr-2">
+                {getIconComponent(selectedTeam.icon)}
+              </div>
+              <span className="truncate">{selectedTeam.name}</span>
             </div>
             <ChevronsUpDown className="ml-1 h-4 w-4 shrink-0 opacity-50" />
           </Button>
@@ -114,7 +107,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
                     }}
                   >
                     <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 mr-2">
-                      {team.icon}
+                      {getIconComponent(team.icon)}
                     </div>
                     <span className="truncate">{team.name}</span>
                     {selectedTeam.id === team.id && (
@@ -155,12 +148,12 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
           <Button
             variant="outline"
             size="icon"
-            className="md:hidden h-9 w-9 p-0"
+            className="md:hidden h-9 w-9 p-0 flex items-center justify-center"
             aria-label="Select a team"
           >
-            {/* <div className="flex h-6 w-6 items-center justify-center rounded-md border bg-accent/50">
-              {selectedTeam.icon}
-            </div> */}
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 ">
+              {getIconComponent(selectedTeam.icon)}
+            </div>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
@@ -174,7 +167,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
             >
               <div className="flex items-center">
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border bg-accent/50 mr-2">
-                  {team.icon}
+                  {getIconComponent(team.icon)}
                 </div>
                 <span>{team.name}</span>
               </div>
