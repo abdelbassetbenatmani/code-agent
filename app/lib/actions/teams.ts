@@ -43,6 +43,7 @@ export async function getTeamById(teamId: string) {
           },
         },
         owner: true, // Include owner details
+        invitations: true, // Include invitations related to the team
       },
     });
 

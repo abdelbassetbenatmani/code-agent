@@ -50,6 +50,7 @@ export type TeamTypeWithMembers = Prisma.TeamGetPayload<{
       };
     };
     owner: true; // Include owner details
+    invitations: true; // Include invitations related to the team
   };
 }>;
 

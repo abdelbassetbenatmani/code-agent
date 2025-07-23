@@ -69,7 +69,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
 import { getTeamById } from "@/app/lib/actions/teams";
-import { TeamMemberType, TeamTypeWithMembers } from "@/prisma/types";
+import {
+  InvitationType,
+  TeamMemberType,
+  TeamTypeWithMembers,
+} from "@/prisma/types";
 import { v4 as uuidv4 } from "uuid";
 import { addMemberInvitation } from "@/app/lib/actions/invitation";
 
@@ -83,14 +87,22 @@ export const TeamDetails = ({
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchInvitations, setSearchInvitations] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   const debouncedSearchTerm = useDebounce<string>(searchTerm, 300);
+  const debouncedSearchInvitations = useDebounce<string>(
+    searchInvitations,
+    300
+  );
 
   const [teamDetails, setTeamDetails] = useState<TeamTypeWithMembers | null>(
     null
   );
   const [members, setMembers] = useState<TeamMemberType[]>(team.members || []);
+  const [invitations, setInvitations] = useState<InvitationType[]>(
+    team.invitations || []
+  );
 
   // Filter members based on search
   const filteredMembers = debouncedSearchTerm
@@ -105,6 +117,19 @@ export const TeamDetails = ({
           member.role?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       )
     : members;
+
+  // Filter invitations based on search
+  const filteredInvitations = debouncedSearchInvitations
+    ? invitations.filter(
+        (invitation: any) =>
+          invitation.email
+            .toLowerCase()
+            .includes(debouncedSearchInvitations.toLowerCase()) ||
+          invitation.role
+            .toLowerCase()
+            .includes(debouncedSearchInvitations.toLowerCase())
+      )
+    : invitations;
 
   // Form schema for inviting a member
   const inviteFormSchema = z.object({
@@ -222,6 +247,7 @@ export const TeamDetails = ({
         console.log("Fetched team details:", data);
 
         setMembers(data.members || []);
+        setInvitations(data.invitations || []);
       } catch (error) {
         console.error("Error fetching team details:", error);
       }
@@ -409,6 +435,113 @@ export const TeamDetails = ({
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-8">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <User className="h-8 w-8 text-muted-foreground mb-2" />
+                        <h3 className="font-medium">No members found</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {debouncedSearchTerm
+                            ? "No members match your search criteria"
+                            : "This team doesn't have any members yet"}
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Invite Members
+            </CardTitle>
+            <CardDescription>
+              List of pending invitations to join the team.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search invited members..."
+                className="pl-8"
+                value={searchInvitations}
+                onChange={(e) => setSearchInvitations(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="hidden md:table-cell">Email</TableHead>
+                  <TableHead>Invited By</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Expired At</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredInvitations.length > 0 ? (
+                  filteredInvitations.map((invitation: any) => (
+                    <TableRow key={invitation.id || invitation.email}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                            {invitation.email?.charAt(0) || "U"}
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">
+                              {invitation?.email || "No email"}
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {invitation.invitedBy || "Unknown"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {invitation.role === "Admin" && (
+                            <Shield className="h-3 w-3 text-primary" />
+                          )}
+                          <span>{invitation.role || "Member"}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {invitation.expiresAt
+                          ? new Date(invitation.expiresAt).toLocaleDateString()
+                          : "No expiration date"}
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
+                            invitation.status === "PENDING"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : invitation.status === "ACCEPTED"
+                              ? "bg-green-100 text-green-800"
+                              : invitation.status === "EXPIRED"
+                              ? "bg-gray-200 text-gray-600"
+                              : invitation.status === "DECLINED"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          {invitation.status || "PENDING"}
+                        </span>
                       </TableCell>
                     </TableRow>
                   ))
