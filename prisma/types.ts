@@ -58,3 +58,6 @@ export type TeamMemberType = Prisma.TeamMemberGetPayload<{
     user: true; // Include user details
   };
 }>;
+
+
+export type InvitationType = Prisma.InvitationGetPayload<object>;

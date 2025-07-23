@@ -31,8 +31,6 @@ export const customAdapter = (p: PrismaClient) => {
           },
         });
 
-
-
       } catch (error) {
         console.error("Failed to create default team:", error);
         // Don't throw here to avoid blocking user creation

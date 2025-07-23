@@ -70,6 +70,8 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { getTeamById } from "@/app/lib/actions/teams";
 import { TeamMemberType, TeamTypeWithMembers } from "@/prisma/types";
+import { v4 as uuidv4 } from "uuid";
+import { addMemberInvitation } from "@/app/lib/actions/invitation";
 
 export const TeamDetails = ({
   team,
@@ -123,21 +125,68 @@ export const TeamDetails = ({
 
   const onInviteSubmit = async (values: z.infer<typeof inviteFormSchema>) => {
     try {
-      // TODO: Implement API call to invite a member
-      console.log("Inviting member:", values);
+      // Show loading toast
+      toast.loading("Sending invitation...");
 
-      // Simulate API call success
-      toast(
-        "Member invited successfully! An email has been sent to " + values.email
-      );
+      // Generate a unique invitation ID
+      const invitationId = uuidv4();
 
-      setIsInviteDialogOpen(false);
-      inviteForm.reset();
+      const response = await fetch("/api/send-invitation", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: values.email,
+          subject: `Invitation to join ${team.name} team`,
+          invitationDetails: {
+            invitationId,
+            teamId: team.id,
+            teamName: team.name,
+            role: values.role,
+            invitedBy: teamDetails?.owner?.name || "Team Admin",
+            acceptLink: `${
+              window.location.origin
+            }/invitations/${invitationId}?email=${encodeURIComponent(
+              values.email
+            )}&team=${team.id}`,
+          },
+        }),
+      });
 
-      // You would typically refresh the members list here
+      const data = await response.json();
+
+      if (data.success) {
+        // Dismiss loading toast and show success
+        toast.dismiss();
+        toast.success("Team invitation sent successfully!");
+
+        // Create invitation record in database
+        await addMemberInvitation({
+          email: values.email,
+          teamId: team.id,
+          token: invitationId,
+        });
+
+        // Close dialog and reset form
+        setIsInviteDialogOpen(false);
+        inviteForm.reset();
+
+        return data;
+      } else {
+        // Dismiss loading toast and show error
+        toast.dismiss();
+        toast.error(`Failed to send invitation: ${data.message}`);
+        throw new Error(data.message);
+      }
     } catch (error) {
-      console.error("Error inviting member:", error);
-      toast("Failed to invite member. Please try again.");
+      toast.dismiss();
+      toast.error(
+        `Error sending invitation: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+      console.error("Error sending invitation:", error);
     }
   };
 
@@ -333,8 +382,7 @@ export const TeamDetails = ({
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger className="flex items-center justify-center cursor-pointer hover:bg-muted p-1 rounded">
-                              <MoreHorizontal className="h-4 w-4" />
-
+                            <MoreHorizontal className="h-4 w-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent>
                             <DropdownMenuItem>

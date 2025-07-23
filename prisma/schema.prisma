@@ -159,6 +159,7 @@ model Team {
   @@unique([name, ownerId])
   members     TeamMember[]
   repos       Repo[]
+  invitations Invitation[]
 }
 
 model TeamMember {
@@ -173,4 +174,23 @@ model TeamMember {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, userId])
+}
+
+model Invitation {
+  id        String   @id @default(cuid())
+  email     String   // The email address of the invited user
+  teamId    String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  acceptedAt DateTime?
+  status    InvitationStatus @default(PENDING)
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
 }
