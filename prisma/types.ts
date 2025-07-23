@@ -42,6 +42,17 @@ export type VerificationToken = Prisma.VerificationTokenGetPayload<object>;
 
 export type TeamType = Prisma.TeamGetPayload<object>;
 
+export type TeamTypeWithMembers = Prisma.TeamGetPayload<{
+  include: {
+    members: {
+      include: {
+        user: true; // Include user details in the members
+      };
+    };
+    owner: true; // Include owner details
+  };
+}>;
+
 export type TeamMemberType = Prisma.TeamMemberGetPayload<{
   include: {
     user: true; // Include user details

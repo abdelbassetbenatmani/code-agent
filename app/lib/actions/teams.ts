@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 
-import { TeamType } from "@/prisma/types";
+import { TeamType, TeamTypeWithMembers } from "@/prisma/types";
 
 export async function getTeams() {
   try {
@@ -27,6 +27,33 @@ export async function getOwnedTeams(userId: string) {
   } catch (error) {
     console.error("Error fetching owned teams:", error);
     throw new Error("Failed to fetch owned teams");
+  }
+}
+
+export async function getTeamById(teamId: string) {
+  try {
+    const team = await prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      include: {
+        members: {
+          include: {
+            user: true, // Include user details in the members
+          },
+        },
+        owner: true, // Include owner details
+      },
+    });
+
+    if (!team) {
+      throw new Error("Team not found");
+    }
+
+    return team as TeamTypeWithMembers;
+  } catch (error) {
+    console.error("Error fetching team by ID:", error);
+    throw new Error("Failed to fetch team by ID");
   }
 }
 
