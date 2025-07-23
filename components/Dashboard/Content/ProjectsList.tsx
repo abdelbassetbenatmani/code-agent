@@ -213,12 +213,12 @@ const ProjectsList = () => {
                 </div>
 
                 {/* Activity metrics - added review and refactor counts */}
-                <div className="mt-5 grid grid-cols-4 gap-2 text-xs">
+                <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
-                    <div className="flex items-center justify-center mb-1">
+                    <div className="flex items-center justify-center mb-1 w-full">
                       <div
                         className={cn(
-                          "h-2 w-2 rounded-full mr-1.5",
+                          "h-2 w-2 shrink-0 rounded-full mr-1",
                           project.status === "public"
                             ? "bg-green-500"
                             : project.status === "private"
@@ -226,7 +226,7 @@ const ProjectsList = () => {
                             : "bg-gray-500"
                         )}
                       ></div>
-                      <span className="capitalize text-muted-foreground">
+                      <span className="capitalize text-muted-foreground truncate">
                         {project.status}
                       </span>
                     </div>
@@ -236,10 +236,10 @@ const ProjectsList = () => {
                   </div>
 
                   <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
-                    <div className="flex items-center justify-center mb-1">
-                      <Calendar className="h-3 w-3 mr-1 text-muted-foreground" />
+                    <div className="flex items-center justify-center mb-1 w-full">
+                      <Calendar className="h-3 w-3 mr-1 shrink-0 text-muted-foreground" />
                       <span
-                        className="text-muted-foreground truncate max-w-[90px]"
+                        className="text-muted-foreground truncate"
                         title={formatDistanceToNow(
                           new Date(project.lastUpdated)
                         )}
@@ -254,7 +254,7 @@ const ProjectsList = () => {
 
                   <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
                     <div className="flex items-center justify-center mb-1">
-                      <Eye className="h-3 w-3 mr-1 text-blue-500" />
+                      <Eye className="h-3 w-3 mr-1 shrink-0 text-blue-500" />
                       <span className="text-muted-foreground">
                         {project.reviewCount || 0}
                       </span>
@@ -266,7 +266,7 @@ const ProjectsList = () => {
 
                   <div className="flex flex-col items-center justify-center p-2 bg-muted/30 dark:bg-slate-800/40 rounded-md">
                     <div className="flex items-center justify-center mb-1">
-                      <RefreshCcw className="h-3 w-3 mr-1 text-purple-500" />
+                      <RefreshCcw className="h-3 w-3 mr-1 shrink-0 text-purple-500" />
                       <span className="text-muted-foreground">
                         {project.refactorCount || 0}
                       </span>
