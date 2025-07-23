@@ -41,7 +41,7 @@ export async function addMemberInvitation({
 export async function deleteInvitation(invitationId: string) {
   try {
     const deletedInvitation = await prisma.invitation.delete({
-      where: { id: invitationId },
+      where: { token: invitationId },
     });
 
     return deletedInvitation;

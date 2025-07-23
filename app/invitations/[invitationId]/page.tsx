@@ -29,6 +29,7 @@ import {
   declineInvitation,
   getInvitationByToken,
 } from "@/app/lib/actions/invitation";
+import { loginWithInvitation } from "@/app/lib/actions/auth";
 
 const InvitationPage = () => {
   const params = useParams();
@@ -71,47 +72,15 @@ const InvitationPage = () => {
   }, [invitationId]);
 
   const handleAcceptInvitation = async () => {
-    if (status !== "authenticated") {
-      // Store invitation info in localStorage to return here after auth
-      localStorage.setItem(
-        "pendingInvitation",
-        JSON.stringify({
-          invitationId,
-          teamId,
-          email,
-          teamName,
-        })
-      );
-
-      router.push("/signin");
-      return;
-    }
-
     setAcceptingInvitation(true);
-
     try {
-      const response = await fetch("/api/invitations/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          invitationId,
-          teamId,
-          email,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("You've successfully joined the team!");
-        router.push("/dashboard");
-      } else {
-        toast.error(data.message || "Failed to accept invitation");
-      }
-    } catch (err) {
-      console.error("Error accepting invitation:", err);
+      await loginWithInvitation(
+        invitationId,
+        teamId || "",
+        invitation?.role || "MEMBER"
+      );
+    } catch (error) {
+      console.error("Error accepting invitation:", error);
       toast.error("An error occurred. Please try again.");
     } finally {
       setAcceptingInvitation(false);

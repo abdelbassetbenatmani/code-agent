@@ -440,7 +440,7 @@ export const TeamDetails = ({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
+                    <TableCell colSpan={5} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center text-center">
                         <User className="h-8 w-8 text-muted-foreground mb-2" />
                         <h3 className="font-medium">No members found</h3>
@@ -547,7 +547,7 @@ export const TeamDetails = ({
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-8">
+                    <TableCell colSpan={5} className="text-center py-8">
                       <div className="flex flex-col items-center justify-center text-center">
                         <User className="h-8 w-8 text-muted-foreground mb-2" />
                         <h3 className="font-medium">No members found</h3>

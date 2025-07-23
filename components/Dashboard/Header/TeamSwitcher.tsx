@@ -26,7 +26,7 @@ import { useEffect, useState } from "react";
 import CreateTeam from "../Teams/CreateTeam";
 import useTeamStore from "@/lib/store/teams";
 import { Session } from "@/prisma/types";
-import { getTeams } from "@/app/lib/actions/teams";
+import { getUserTeams } from "@/app/lib/actions/teams";
 import { getIconComponent } from "@/components/utils/getTeamIcon";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 
@@ -56,7 +56,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
   // fetch teams from store or session
   useEffect(() => {
     if (session) {
-      getTeams().then((fetchedTeams) => {
+      getUserTeams().then((fetchedTeams) => {
         if (fetchedTeams.length > 0) {
           setTeams(fetchedTeams);
           setSelectedTeam(fetchedTeams[0]);

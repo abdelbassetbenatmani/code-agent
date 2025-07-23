@@ -3,15 +3,57 @@
 import { prisma } from "@/lib/prisma";
 
 import { TeamType, TeamTypeWithMembers } from "@/prisma/types";
+import { auth } from "../auth";
 
-export async function getTeams() {
+export async function getUserTeams() {
+  const session = await auth();
   try {
-    const teams = await prisma.team.findMany({});
+    // Find teams where the user is a member (including teams they own)
+    const teams = await prisma.team.findMany({
+      where: {
+        members: {
+          some: {
+            userId: session?.user?.id || "",
+          },
+        },
+      },
+      include: {
+        owner: true, // Include owner details
+        members: {
+          where: {
+            userId: session?.user?.id || "",
+          },
+          select: {
+            role: true, // Include the user's role in each team
+          },
+        },
+        _count: {
+          select: {
+            members: true, // Count total members
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: "asc", // Most recently updated teams first
+      },
+    });
 
-    return teams as TeamType[];
+    // Format the teams to include the user's role in each team
+    const formattedTeams = teams.map((team) => ({
+      ...team,
+      userRole: team.members[0]?.role || "member",
+      memberCount: team._count.members,
+      members: undefined, // Remove the members array to clean up the response
+      _count: undefined, // Remove the count object
+    }));
+
+    return formattedTeams as (TeamType & {
+      userRole: string;
+      memberCount: number;
+    })[];
   } catch (error) {
-    console.error("Error fetching teams:", error);
-    throw new Error("Failed to fetch teams");
+    console.error("Error fetching user teams:", error);
+    throw new Error("Failed to fetch teams where user is a member");
   }
 }
 
@@ -85,7 +127,7 @@ export async function createTeam({
         members: {
           create: {
             userId,
-            role: "owner", // Assuming the creator is the owner
+            role: "OWNER", // Assuming the creator is the owner
           },
         },
       },
