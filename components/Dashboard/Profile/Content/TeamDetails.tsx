@@ -149,7 +149,7 @@ export const TeamDetails = ({
               window.location.origin
             }/invitations/${invitationId}?email=${encodeURIComponent(
               values.email
-            )}&team=${team.id}`,
+            )}&team=${team.id}&teamName=${encodeURIComponent(team.name)}`,
           },
         }),
       });
