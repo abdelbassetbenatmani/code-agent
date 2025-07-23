@@ -166,6 +166,8 @@ export const TeamDetails = ({
           email: values.email,
           teamId: team.id,
           token: invitationId,
+          invitedBy: teamDetails?.owner?.name || "",
+          role: values.role,
         });
 
         // Close dialog and reset form

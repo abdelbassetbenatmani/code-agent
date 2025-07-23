@@ -181,6 +181,8 @@ model Invitation {
   email     String   // The email address of the invited user
   teamId    String
   token     String   @unique
+  invitedBy String // The userId of the person who sent the invitation
+  role      String   @default("member") // Role of the invited user in the team
   createdAt DateTime @default(now())
   expiresAt DateTime
   acceptedAt DateTime?
@@ -193,4 +195,5 @@ enum InvitationStatus {
   PENDING
   ACCEPTED
   EXPIRED
+  DECLINED
 }

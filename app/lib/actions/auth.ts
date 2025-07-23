@@ -8,6 +8,12 @@ export const login = async () => {
   });
 };
 
+export const loginWithAcceptInvitation = async (invitationId: string) => {
+  await signIn("github", {
+    redirectTo: "/dashboard",
+  });
+};
+
 export const logout = async () => {
   await signOut({
     redirectTo: "/",
