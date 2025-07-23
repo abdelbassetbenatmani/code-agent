@@ -77,7 +77,7 @@ const Teams = () => {
   }, [setOwnedTeams, session.data?.user?.id]);
 
   return (
-    <div className="space-y-6 container mx-auto py-6 max-w-4xl">
+    <div className="space-y-6 container mx-auto py-6 max-w-6xl">
       <div className="flex items-center justify-between">
         <CardTitle className="text-xl font-bold">My Teams</CardTitle>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
