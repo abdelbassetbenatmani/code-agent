@@ -20,6 +20,7 @@ import { InviteMemberDialog } from "./TeamDetailsComponents/InviteMemberDialog";
 import { DeleteTeamDialog } from "./TeamDetailsComponents/DeleteTeamDialog";
 import { toast } from "sonner";
 import useTeamStore from "@/lib/store/teams";
+import useTeamMemberStore from "@/lib/store/teamMember";
 
 export const TeamDetails = ({
   team,
@@ -29,6 +30,7 @@ export const TeamDetails = ({
   onBack: () => void;
 }) => {
   const { updateTeam } = useTeamStore();
+  const { members, setMembers } = useTeamMemberStore();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,7 +46,6 @@ export const TeamDetails = ({
   const [teamDetails, setTeamDetails] = useState<TeamTypeWithMembers | null>(
     null
   );
-  const [members, setMembers] = useState<TeamMemberType[]>(team.members || []);
   const [invitations, setInvitations] = useState<InvitationType[]>(
     team.invitations || []
   );
@@ -85,7 +86,7 @@ export const TeamDetails = ({
       // Simulate API call delay
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      toast("Team deleted successfully!");
+      toast.success("Team deleted successfully!");
 
       // Return to teams list
       onBack();
@@ -132,8 +133,6 @@ export const TeamDetails = ({
       try {
         const data = await getTeamById(team.id);
         setTeamDetails(data);
-        console.log("Fetched team details:", data);
-
         setMembers(data.members || []);
         setInvitations(data.invitations || []);
       } catch (error) {
@@ -141,7 +140,7 @@ export const TeamDetails = ({
       }
     };
     fetchTeamDetails();
-  }, [team.id]);
+  }, [team.id, setMembers]);
 
   return (
     <div className="space-y-8">
@@ -167,6 +166,7 @@ export const TeamDetails = ({
       </div>
 
       <TeamMembersCard
+        teamId={team.id}
         members={filteredMembers}
         searchTerm={searchTerm}
         debouncedSearchTerm={debouncedSearchTerm}

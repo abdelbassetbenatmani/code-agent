@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 export async function createTeamMember({
   teamId,
@@ -73,6 +74,7 @@ export async function updateTeamMemberRole({
       },
     });
 
+    revalidatePath("/dashboard/profile?tab=teams");
     return updatedMember;
   } catch (error) {
     console.error("Error updating team member role:", error);

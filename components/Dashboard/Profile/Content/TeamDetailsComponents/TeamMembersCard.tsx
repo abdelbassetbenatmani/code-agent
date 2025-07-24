@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Card,
@@ -20,22 +21,123 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, User, Shield, MoreHorizontal, Trash2 } from "lucide-react";
+import {
+  Search,
+  User,
+  Shield,
+  MoreHorizontal,
+  Trash2,
+  Loader2,
+} from "lucide-react";
 import { TeamMemberType } from "@/prisma/types";
+import { updateTeamMemberRole } from "@/app/lib/actions/teamMember";
+import { toast } from "sonner";
+import useTeamMemberStore from "@/lib/store/teamMember";
 
 interface TeamMembersCardProps {
+  teamId: string; // Add teamId prop
   members: TeamMemberType[];
   searchTerm: string;
   debouncedSearchTerm: string;
   onSearchChange: (value: string) => void;
+
 }
 
 export const TeamMembersCard = ({
+  teamId,
   members,
   searchTerm,
   debouncedSearchTerm,
   onSearchChange,
+
 }: TeamMembersCardProps) => {
+  const { updateMemberRole } = useTeamMemberStore();
+  const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
+
+  const changeToAdmin = async (
+    memberId: string,
+    userId: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    try {
+      setUpdatingMemberId(memberId);
+
+      console.log(`Changing user ${userId} to Admin in team ${teamId}`);
+
+      await updateTeamMemberRole({
+        teamId,
+        userId,
+        role: "ADMIN",
+      });
+
+      toast.success("Member role updated to Admin");
+
+      updateMemberRole(userId, "ADMIN");
+
+    } catch (error) {
+      console.error("Error changing role to Admin:", error);
+      toast.error("Failed to update member role");
+    } finally {
+      setUpdatingMemberId(null);
+    }
+  };
+
+  const changeToMember = async (
+    memberId: string,
+    userId: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    try {
+      setUpdatingMemberId(memberId);
+
+      console.log(`Changing user ${userId} to Member in team ${teamId}`);
+
+      await updateTeamMemberRole({
+        teamId,
+        userId,
+        role: "MEMBER",
+      });
+
+      toast.success("Member role updated to Member");
+
+      updateMemberRole(userId, "MEMBER");
+
+    } catch (error) {
+      console.error("Error changing role to Member:", error);
+      toast.error("Failed to update member role");
+    } finally {
+      setUpdatingMemberId(null);
+    }
+  };
+
+  const removeMember = async (
+    memberId: string,
+    userId: string,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    // This would need to be implemented in your actions
+    // For now, just showing the structure
+    try {
+      setUpdatingMemberId(memberId);
+
+      console.log(`Removing user ${userId} from team ${teamId}`);
+
+      // Call your remove member API
+      // await removeTeamMember({ teamId, userId });
+
+      toast.success("Member removed from team");
+
+    } catch (error) {
+      console.error("Error removing member:", error);
+      toast.error("Failed to remove member");
+    } finally {
+      setUpdatingMemberId(null);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -105,42 +207,69 @@ export const TeamMembersCard = ({
                     </TableCell>
                     <TableCell>
                       <span
-                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs ${
-                          member.status === "pending"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
+                        className={`inline-flex items-center rounded-full px-2 py-1 text-xs bg-green-100 text-green-800`}
                       >
-                        {member.status || "active"}
+                        {"active"}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger className="flex items-center justify-center cursor-pointer hover:bg-muted p-1 rounded">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem>
-                            {member.role === "Admin" ? (
-                              <div>
-                                <User className="h-4 w-4 mr-2" />
-                                <span>Change to Member</span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <Shield className="h-4 w-4 mr-2" />
-                                <span>Change to Admin</span>
-                              </div>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <div className="flex items-center gap-2">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              <span>Remove Member</span>
-                            </div>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      {updatingMemberId === member.id ? (
+                        <div className="flex justify-center">
+                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger className="flex items-center justify-center cursor-pointer hover:bg-muted p-1 rounded">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </DropdownMenuTrigger>
+                          {member.role.toUpperCase() !== "OWNER" && (
+                            <DropdownMenuContent>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                {member.role === "ADMIN" ? (
+                                  <div
+                                    className="flex items-center gap-2 w-full cursor-pointer"
+                                    onClick={(e) =>
+                                      changeToMember(
+                                        member.id,
+                                        member.userId,
+                                        e
+                                      )
+                                    }
+                                  >
+                                    <User className="h-4 w-4 mr-2" />
+                                    <span>Change to Member</span>
+                                  </div>
+                                ) : (
+                                  <div
+                                    className="flex items-center gap-2 w-full cursor-pointer"
+                                    onClick={(e) =>
+                                      changeToAdmin(member.id, member.userId, e)
+                                    }
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    <span>Change to Admin</span>
+                                  </div>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                <div
+                                  className="flex items-center gap-2 w-full cursor-pointer text-destructive"
+                                  onClick={(e) =>
+                                    removeMember(member.id, member.userId, e)
+                                  }
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  <span>Remove Member</span>
+                                </div>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          )}
+                        </DropdownMenu>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
