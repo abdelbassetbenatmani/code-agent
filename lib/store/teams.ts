@@ -40,6 +40,8 @@ const useTeamStore = create<TeamState>()(
       removeTeam: (teamId) =>
         set((state) => ({
           teams: state.teams.filter((team) => team.id !== teamId),
+          ownedTeams: state.ownedTeams.filter((team) => team.id !== teamId),
+          teamId: state.teamId === teamId ? null : state.teamId,
         })),
       updateTeam: (teamId, updatedTeam) =>
         set((state) => ({

@@ -170,3 +170,20 @@ export async function updateTeamInfo({
     throw new Error("Failed to update team info");
   }
 }
+
+
+export async function deleteTeam(teamId: string) {
+  try {
+    const deletedTeam = await prisma.team.delete({
+      where: {
+        id: teamId,
+      },
+    });
+
+    revalidatePath(`/dashboard/profile?tab=teams`);
+    return deletedTeam as TeamType;
+  } catch (error) {
+    console.error("Error deleting team:", error);
+    throw new Error("Failed to delete team");
+  }
+}

@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
-import { getTeamById, updateTeamInfo } from "@/app/lib/actions/teams";
+import {
+  deleteTeam,
+  getTeamById,
+  updateTeamInfo,
+} from "@/app/lib/actions/teams";
 import {
   InvitationType,
   TeamMemberType,
@@ -29,7 +33,7 @@ export const TeamDetails = ({
   team: any;
   onBack: () => void;
 }) => {
-  const { updateTeam } = useTeamStore();
+  const { updateTeam, removeTeam } = useTeamStore();
   const { members, setMembers } = useTeamMemberStore();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -80,13 +84,12 @@ export const TeamDetails = ({
   const handleDeleteTeam = async () => {
     setIsDeleting(true);
     try {
-      // TODO: Implement API call to delete team
-      console.log("Deleting team:", team.id);
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await deleteTeam(team.id);
 
       toast.success("Team deleted successfully!");
+
+      // Remove the team from the store
+      removeTeam(team.id);
 
       // Return to teams list
       onBack();
@@ -182,7 +185,9 @@ export const TeamDetails = ({
         />
       )}
 
-      <DangerZoneCard onDeleteClick={() => setIsDeleteDialogOpen(true)} />
+      {team.name !== "Personal" && (
+        <DangerZoneCard onDeleteClick={() => setIsDeleteDialogOpen(true)} />
+      )}
 
       <InviteMemberDialog
         isOpen={isInviteDialogOpen}
