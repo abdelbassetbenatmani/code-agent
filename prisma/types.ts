@@ -60,5 +60,6 @@ export type TeamMemberType = Prisma.TeamMemberGetPayload<{
   };
 }>;
 
-
 export type InvitationType = Prisma.InvitationGetPayload<object>;
+
+export type NotificationsTypes = Prisma.NotificationGetPayload<object>;

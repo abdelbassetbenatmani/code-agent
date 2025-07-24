@@ -1,0 +1,19 @@
+-- CreateEnum
+CREATE TYPE "NotificationType" AS ENUM ('CODE_REVIEW', 'CODE_REFACTOR', 'TEAM_INVITATION', 'TEAM_MEMBER_REMOVED', 'TEAM_MEMBER_ROLE_CHANGED', 'TEAM_MEMBER_JOINED', 'TEAM_MEMBER_LEFT', 'TEAM_MEMBER_REMOVED_BY_OWNER', 'TEAM_MEMBER_ADDED', 'TEAM_DELETE', 'REPO_DELETE', 'REPO_ADD', 'REPO_UPDATE');
+
+-- CreateTable
+CREATE TABLE "Notification" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "type" "NotificationType" NOT NULL,
+    "title" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "read" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
