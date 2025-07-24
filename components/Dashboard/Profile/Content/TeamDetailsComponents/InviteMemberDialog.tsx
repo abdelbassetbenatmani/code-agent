@@ -30,6 +30,8 @@ import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import { addMemberInvitation } from "@/app/lib/actions/invitation";
 import { TeamTypeWithMembers } from "@/prisma/types";
+import { getUserProfileByEmail } from "@/app/lib/actions/user";
+import { createNotification } from "@/app/lib/actions/notifications";
 
 interface InviteMemberDialogProps {
   isOpen: boolean;
@@ -112,6 +114,17 @@ export const InviteMemberDialog = ({
           invitedBy: teamDetails?.owner?.name || "",
           role: values.role,
         });
+
+        // if user is existing on our system, create a notification
+        const existingUser = await getUserProfileByEmail(values.email);
+        if (existingUser) {
+          await createNotification({
+            userId: existingUser.id,
+            type: "TEAM_INVITATION",
+            title: `You've been invited to join ${team.name}`,
+            message: `You have been invited to join the team ${team.name} as a ${values.role}. Please check your email for the invitation link.`,
+          });
+        }
 
         // Close dialog and reset form
         onOpenChange(false);

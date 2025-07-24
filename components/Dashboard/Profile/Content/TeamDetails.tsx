@@ -25,6 +25,7 @@ import { DeleteTeamDialog } from "./TeamDetailsComponents/DeleteTeamDialog";
 import { toast } from "sonner";
 import useTeamStore from "@/lib/store/teams";
 import useTeamMemberStore from "@/lib/store/teamMember";
+import { sendNotiificationToMultipleUsers } from "@/app/lib/actions/notifications";
 
 export const TeamDetails = ({
   team,
@@ -90,6 +91,16 @@ export const TeamDetails = ({
 
       // Remove the team from the store
       removeTeam(team.id);
+
+      // create a notification for all members of the team
+      const userIds = members.map((member: TeamMemberType) => member.userId);
+
+      await sendNotiificationToMultipleUsers({
+        userIds,
+        type: "TEAM_DELETE",
+        title: `Team ${team.name} has been deleted`,
+        message: `The team ${team.name} has been deleted by the owner. If you have any questions, please contact the team owner.`,
+      });
 
       // Return to teams list
       onBack();

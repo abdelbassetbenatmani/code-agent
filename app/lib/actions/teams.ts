@@ -101,6 +101,28 @@ export async function getTeamById(teamId: string) {
   }
 }
 
+export async function getOwnerOfTeam(teamId: string) {
+  try {
+    const team = await prisma.team.findUnique({
+      where: {
+        id: teamId,
+      },
+      select: {
+        ownerId: true,
+      },
+    });
+
+    if (!team) {
+      throw new Error("Team not found");
+    }
+
+    return team.ownerId;
+  } catch (error) {
+    console.error("Error fetching team owner:", error);
+    throw new Error("Failed to fetch team owner");
+  }
+}
+
 interface CreateTeamParams {
   name: string;
   icon: string;
@@ -170,7 +192,6 @@ export async function updateTeamInfo({
     throw new Error("Failed to update team info");
   }
 }
-
 
 export async function deleteTeam(teamId: string) {
   try {

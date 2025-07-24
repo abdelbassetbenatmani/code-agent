@@ -29,6 +29,29 @@ export const getUserProfile = async (userId: string) => {
   }
 };
 
+export const getUserProfileByEmail = async (email: string) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return user;
+  }
+  catch (error) {
+    console.error("Error fetching user profile by email:", error);
+    throw new Error("Failed to fetch user profile by email");
+  }
+};
+
 export const updateUserProfile = async (
   userId: string,
   profileData: {

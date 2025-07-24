@@ -63,3 +63,20 @@ export type TeamMemberType = Prisma.TeamMemberGetPayload<{
 export type InvitationType = Prisma.InvitationGetPayload<object>;
 
 export type NotificationsTypes = Prisma.NotificationGetPayload<object>;
+
+
+// enum NotificationType {
+//   CODE_REVIEW
+//   CODE_REFACTOR
+//   TEAM_INVITATION == Done
+//   TEAM_MEMBER_REMOVED
+//   TEAM_MEMBER_ROLE_CHANGED
+//   TEAM_MEMBER_JOINED == Done
+//   TEAM_MEMBER_LEFT
+//   TEAM_MEMBER_REMOVED_BY_OWNER
+//   TEAM_MEMBER_ADDED
+//   TEAM_DELETE == Done
+//   REPO_DELETE
+//   REPO_ADD
+//   REPO_UPDATE
+// }
