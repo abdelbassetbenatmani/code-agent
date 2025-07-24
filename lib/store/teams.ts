@@ -46,6 +46,9 @@ const useTeamStore = create<TeamState>()(
           teams: state.teams.map((team) =>
             team.id === teamId ? { ...team, ...updatedTeam } : team
           ),
+          ownedTeams: state.ownedTeams.map((team) =>
+            team.id === teamId ? { ...team, ...updatedTeam } : team
+          ),
         })),
     }),
     {

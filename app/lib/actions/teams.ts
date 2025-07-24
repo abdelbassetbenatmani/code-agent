@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 import { TeamType, TeamTypeWithMembers } from "@/prisma/types";
 import { auth } from "../auth";
+import { revalidatePath } from "next/cache";
 
 export async function getUserTeams() {
   const session = await auth();
@@ -137,5 +138,35 @@ export async function createTeam({
   } catch (error) {
     console.error("Error creating team:", error);
     throw new Error("Failed to create team");
+  }
+}
+
+interface UpdateTeamNameParams {
+  teamId: string;
+  newName?: string;
+  description?: string;
+}
+
+export async function updateTeamInfo({
+  teamId,
+  newName,
+  description,
+}: UpdateTeamNameParams) {
+  try {
+    const team = await prisma.team.update({
+      where: {
+        id: teamId,
+      },
+      data: {
+        name: newName,
+        description,
+      },
+    });
+
+    revalidatePath(`/dashboard/profile?tab=teams`);
+    return team as TeamType;
+  } catch (error) {
+    console.error("Error updating team info:", error);
+    throw new Error("Failed to update team info");
   }
 }

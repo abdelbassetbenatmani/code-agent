@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
-import { getTeamById } from "@/app/lib/actions/teams";
+import { getTeamById, updateTeamInfo } from "@/app/lib/actions/teams";
 import {
   InvitationType,
   TeamMemberType,
@@ -19,6 +19,7 @@ import { DangerZoneCard } from "./TeamDetailsComponents/DangerZoneCard";
 import { InviteMemberDialog } from "./TeamDetailsComponents/InviteMemberDialog";
 import { DeleteTeamDialog } from "./TeamDetailsComponents/DeleteTeamDialog";
 import { toast } from "sonner";
+import useTeamStore from "@/lib/store/teams";
 
 export const TeamDetails = ({
   team,
@@ -27,6 +28,7 @@ export const TeamDetails = ({
   team: any;
   onBack: () => void;
 }) => {
+  const { updateTeam } = useTeamStore();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,6 +98,35 @@ export const TeamDetails = ({
     }
   };
 
+  const handleUpdateTeamName = async (teamId: string, newName: string) => {
+    const newTeam = await updateTeamInfo({ teamId, newName });
+    // You might want to refresh team data here
+    setTeamDetails((prev) => (prev ? { ...prev, name: newName } : null));
+    updateTeam(teamId, {
+      ...newTeam,
+      description: newTeam.description ?? undefined,
+    });
+  };
+
+  const habdleUpdateTeamDescription = async (
+    teamId: string,
+    newDescription: string
+  ) => {
+    const newTeam = await updateTeamInfo({
+      teamId,
+      description: newDescription,
+    });
+    // You might want to refresh team data here
+    setTeamDetails((prev) =>
+      prev ? { ...prev, description: newDescription } : null
+    );
+    updateTeam(teamId, {
+      ...newTeam,
+      name: newTeam.name ?? undefined,
+      description: newTeam.description ?? undefined,
+    });
+  };
+
   useEffect(() => {
     const fetchTeamDetails = async () => {
       try {
@@ -118,11 +149,14 @@ export const TeamDetails = ({
         team={team}
         onBack={onBack}
         onInvite={() => setIsInviteDialogOpen(true)}
+        onUpdateTeamName={handleUpdateTeamName}
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <TeamAboutCard
+          teamId={team.id}
           description={team.description}
+          onUpdateDescription={habdleUpdateTeamDescription}
           className="md:col-span-2"
         />
         <TeamInfoCard
