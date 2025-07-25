@@ -1,9 +1,4 @@
-import {
-  Clock,
-  Code,
-  AlertCircle,
-  CheckCircle2,
-} from "lucide-react";
+
 import Logo from "../../Logo";
 import TeamSwitcher from "./TeamSwitcher";
 import Notifications from "./Notifications";
@@ -13,55 +8,6 @@ import { auth } from "@/app/lib/auth";
 import { getUserProfile } from "@/app/lib/actions/user";
 
 
-// Sample notifications for demonstration
-export interface Notification {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-  icon: React.ReactNode;
-  actionLabel: string;
-}
-
-const notifications: Notification[] = [
-  {
-    id: "1",
-    title: "Code review completed",
-    description: "Your pull request #42 has been reviewed",
-    time: "2 minutes ago",
-    read: false,
-    icon: <CheckCircle2 className="h-4 w-4 text-green-500" />,
-    actionLabel: "View",
-  },
-  {
-    id: "2",
-    title: "Build failed",
-    description: "main branch build failed due to test errors",
-    time: "35 minutes ago",
-    read: false,
-    icon: <AlertCircle className="h-4 w-4 text-red-500" />,
-    actionLabel: "Details",
-  },
-  {
-    id: "3",
-    title: "New comment on issue #88",
-    description: "John added a comment on your open issue",
-    time: "2 hours ago",
-    read: true,
-    icon: <Code className="h-4 w-4 text-blue-500" />,
-    actionLabel: "Open",
-  },
-  {
-    id: "4",
-    title: "Weekly report available",
-    description: "Your project performance report is ready",
-    time: "Yesterday",
-    read: true,
-    icon: <Clock className="h-4 w-4 text-amber-500" />,
-    actionLabel: "View",
-  },
-];
 
 const DashboardHeader = async () => {
   const session = await auth();
@@ -91,7 +37,7 @@ const DashboardHeader = async () => {
         {/* Right side - Notifications, Theme Toggle and User Menu */}
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Notifications Dropdown */}
-          <Notifications notifications={notifications} />
+          <Notifications userId={session.user.id} />
 
           <DashboardToggleTheme />
           {session.user && <UserDropdown user={user} />}

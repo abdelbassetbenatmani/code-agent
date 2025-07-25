@@ -51,6 +51,19 @@ export async function sendNotiificationToMultipleUsers({
   });
 }
 
+
+export type GetNotificationsResponse = {
+  notifications: NotificationsTypes[];
+  pagination: {
+    page: number;
+    limit: number;
+    totalCount: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+    totalPages: number;
+  };
+};
+
 export async function getNotifications({
   userId,
   page = 1,
@@ -112,6 +125,16 @@ export async function getNotifications({
     },
   };
 }
+
+export async function getUnreadNotificationsCount(userId: string): Promise<number> {
+  return await prisma.notification.count({
+    where: {
+      userId,
+      read: false,
+    },
+  });
+}
+
 
 export async function markNotificationAsRead(notificationId: string) {
   return await prisma.notification.update({
