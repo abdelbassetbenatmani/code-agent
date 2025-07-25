@@ -44,8 +44,14 @@ import { cn } from "@/lib/utils";
 import { deleteRepoProject } from "@/app/lib/actions/github";
 import CreateProject from "./CreateProject";
 import { formatDistanceToNow } from "@/lib/formatDate";
+import { getTeamMembers } from "@/app/lib/actions/teamMember";
+import { sendNotiificationToMultipleUsers } from "@/app/lib/actions/notifications";
+import useTeamStore from "@/lib/store/teams";
+import { useSession } from "next-auth/react";
 
 const ProjectsList = () => {
+  const { team, teamId } = useTeamStore();
+  const session = useSession();
   const { viewMode, getFilteredProjects, deleteProject } = useStore();
   const projects = getFilteredProjects();
   const [open, setOpen] = useState(false);
@@ -86,6 +92,23 @@ const ProjectsList = () => {
     try {
       await deleteRepoProject(Number(projectToDelete));
       deleteProject(projectToDelete);
+
+      // Notify team members about the deleted project
+      if (team && team.name !== "Personal") {
+        const teamMembers = await getTeamMembers(teamId as string);
+        const userIds = teamMembers.map((member) => member.userId);
+
+        // Notify team members about the deleted project
+        sendNotiificationToMultipleUsers({
+          userIds,
+          type: "REPO_DELETE",
+          title: "Project Deleted",
+          message: `The user ${session?.data?.user?.name} has deleted a project. If you have any questions, please contact support.`,
+        }).catch((err) => {
+          console.error("Failed to send notifications:", err);
+        });
+      }
+
       setIsDeleteDialogOpen(false);
       setProjectToDelete(null);
     } catch (error) {

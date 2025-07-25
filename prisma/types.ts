@@ -77,7 +77,7 @@ export type NotificationsTypes = Prisma.NotificationGetPayload<object>;
 //   TEAM_MEMBER_ACCEPTED_INVITATION == Done
 //   TEAM_MEMBER_REJECTED_INVITATION == Done
 //   TEAM_DELETE == Done
-//   REPO_DELETE
-//   REPO_ADD
-//   REPO_UPDATE
+//   REPO_DELETE == Done
+//   REPO_ADD == Done
+//   REPO_UPDATE == Done
 // }

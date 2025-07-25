@@ -31,6 +31,8 @@ import {
 import { useSession } from "next-auth/react";
 import useStore from "@/lib/store/store";
 import useTeamStore from "@/lib/store/teams";
+import { getTeamMembers } from "@/app/lib/actions/teamMember";
+import { sendNotiificationToMultipleUsers } from "@/app/lib/actions/notifications";
 
 const CreateProject = ({
   onOpenChange,
@@ -52,8 +54,7 @@ const CreateProject = ({
 
   // Get addProject function from store
   const { addProject } = useStore();
-  const { teamId } = useTeamStore();
-
+  const { teamId, team } = useTeamStore();
   useEffect(() => {
     fetchGithubRepos();
   }, []);
@@ -75,6 +76,7 @@ const CreateProject = ({
 
     try {
       const [reposResponse, existingProjectsResponse] = await Promise.all([
+        // @ts-check
         fetchRepos(session?.data?.accessToken || ""),
         fetchUserRepos(session?.data?.user?.id || ""),
       ]);
@@ -140,6 +142,22 @@ const CreateProject = ({
         refactorCount: 0,
         reviewCount: 0,
       });
+
+      // create notificaion for team members if team name is not Personal
+      if (team && team.name !== "Personal") {
+        const teamMembers = await getTeamMembers(teamId as string);
+        const userIds = teamMembers.map((member) => member.userId);
+
+        // Notify team members about the new project
+        sendNotiificationToMultipleUsers({
+          userIds,
+          type: "REPO_ADD",
+          title: "New Project Added",
+          message: `The user ${session?.data?.user?.name} has added a new project. If you have any questions, please contact support.`,
+        }).catch((err) => {
+          console.error("Failed to send notifications:", err);
+        });
+      }
 
       // Reset the form
       setSelectedRepo("");
@@ -291,7 +309,6 @@ const CreateProject = ({
           </Button>
         </CardFooter>
       </form>
-
     </div>
   );
 };

@@ -31,7 +31,7 @@ import { getIconComponent } from "@/components/utils/getTeamIcon";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 
 const TeamSwitcher = ({ session }: { session: Session }) => {
-  const { teams, setTeams, setTeamId } = useTeamStore();
+  const { teams, setTeams, setTeamId, setTeam } = useTeamStore();
   // State for team switcher
   const [selectedTeam, setSelectedTeam] = useState(teams[0]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -61,10 +61,11 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
           setTeams(fetchedTeams);
           setSelectedTeam(fetchedTeams[0]);
           setTeamId(fetchedTeams[0].id);
+          setTeam(fetchedTeams[0]);
         }
       });
     }
-  }, [session, setTeams, setTeamId]); // Only re-run when session or setTeams changes
+  }, [session, setTeams, setTeamId, setTeam]); // Only re-run when session or setTeams changes
 
   return (
     <div>
@@ -110,6 +111,7 @@ const TeamSwitcher = ({ session }: { session: Session }) => {
                     onClick={() => {
                       setSelectedTeam(team);
                       setTeamId(team.id);
+                      setTeam(team);
                       setIsSearchOpen(false);
                       setSearchInputValue("");
                     }}

@@ -81,3 +81,22 @@ export async function updateTeamMemberRole({
     throw new Error("Failed to update team member role");
   }
 }
+
+
+export async function getTeamMembers(teamId: string) {
+  try {
+    const members = await prisma.teamMember.findMany({
+      where: {
+        teamId,
+      },
+      include: {
+        user: true, // Include user details
+      },
+    });
+
+    return members;
+  } catch (error) {
+    console.error("Error fetching team members:", error);
+    throw new Error("Failed to fetch team members");
+  }
+}

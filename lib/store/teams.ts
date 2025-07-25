@@ -5,6 +5,7 @@ import { persist } from "zustand/middleware";
 interface TeamState {
   teamId: string | null;
   setTeamId: (teamId: string | null) => void;
+  setTeam: (team: TeamType) => void;
   setTeams: (teams: TeamType[]) => void;
   setOwnedTeams: (ownedTeams: TeamType[]) => void;
   ownedTeams: TeamType[];
@@ -20,6 +21,7 @@ interface TeamState {
     }>
   ) => void;
   teams: TeamType[];
+  team: TeamType | null;
 }
 
 const useTeamStore = create<TeamState>()(
@@ -27,10 +29,12 @@ const useTeamStore = create<TeamState>()(
     (set) => ({
       teamId: null,
       teams: [],
+      team: null,
       ownedTeams: [],
       setOwnedTeams: (ownedTeams) => set({ ownedTeams }),
 
       setTeamId: (teamId) => set({ teamId }),
+      setTeam: (team) => set({ team }),
       setTeams: (teams) => set({ teams }),
       addTeam: (team) =>
         set((state) => ({
