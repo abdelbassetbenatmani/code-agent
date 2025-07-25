@@ -46,6 +46,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { createNotification } from "@/app/lib/actions/notifications";
 
 interface TeamMembersCardProps {
   teamId: string;
@@ -64,10 +65,14 @@ export const TeamMembersCard = ({
 }: TeamMembersCardProps) => {
   const { updateMemberRole, removeMember } = useTeamMemberStore();
   const [updatingMemberId, setUpdatingMemberId] = useState<string | null>(null);
-  
+
   // Add state for delete confirmation dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [memberToDelete, setMemberToDelete] = useState<{id: string; userId: string; name: string} | null>(null);
+  const [memberToDelete, setMemberToDelete] = useState<{
+    id: string;
+    userId: string;
+    name: string;
+  } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const changeToAdmin = async (
@@ -88,6 +93,14 @@ export const TeamMembersCard = ({
       });
 
       toast.success("Member role updated to Admin");
+
+      // create a notification for the user
+      await createNotification({
+        userId,
+        type: "TEAM_MEMBER_ROLE_CHANGED",
+        title: `Your role has been changed to Admin in team ${teamId}`,
+        message: `You are now an Admin of the team. If you have any questions, please contact the team owner.`,
+      });
 
       updateMemberRole(userId, "ADMIN");
     } catch (error) {
@@ -117,6 +130,14 @@ export const TeamMembersCard = ({
 
       toast.success("Member role updated to Member");
 
+      // create a notification for the user
+      await createNotification({
+        userId,
+        type: "TEAM_MEMBER_ROLE_CHANGED",
+        title: `Your role has been changed to Member in team ${teamId}`,
+        message: `You are now a Member of the team. If you have any questions, please contact the team owner.`,
+      });
+
       updateMemberRole(userId, "MEMBER");
     } catch (error) {
       console.error("Error changing role to Member:", error);
@@ -128,16 +149,16 @@ export const TeamMembersCard = ({
 
   // Show delete confirmation dialog instead of directly deleting
   const confirmDeleteMember = (
-    memberId: string, 
+    memberId: string,
     userId: string,
     memberName: string,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    setMemberToDelete({ 
-      id: memberId, 
+    setMemberToDelete({
+      id: memberId,
       userId: userId,
-      name: memberName || "this member"
+      name: memberName || "this member",
     });
     setIsDeleteDialogOpen(true);
   };
@@ -145,20 +166,26 @@ export const TeamMembersCard = ({
   // The actual delete operation when confirmed
   const removeMemberHandler = async () => {
     if (!memberToDelete) return;
-    
+
     try {
       setIsDeleting(true);
 
-      console.log(`Removing user ${memberToDelete.userId} from team ${teamId}`);
-
-      await deleteTeamMember({ 
-        teamId, 
-        userId: memberToDelete.userId 
+      await deleteTeamMember({
+        teamId,
+        userId: memberToDelete.userId,
       });
 
       toast.success("Member removed from team");
       removeMember(memberToDelete.userId);
-      
+
+      // create a notification for the removed member
+      await createNotification({
+        userId: memberToDelete.userId,
+        type: "TEAM_MEMBER_REMOVED",
+        title: `You have been removed from the team`,
+        message: `You have been removed from the team by the owner. If you have any questions, please contact the team owner.`,
+      });
+
       // Close the dialog
       setIsDeleteDialogOpen(false);
       setMemberToDelete(null);
@@ -278,7 +305,11 @@ export const TeamMembersCard = ({
                                     <div
                                       className="flex items-center gap-2 w-full cursor-pointer"
                                       onClick={(e) =>
-                                        changeToAdmin(member.id, member.userId, e)
+                                        changeToAdmin(
+                                          member.id,
+                                          member.userId,
+                                          e
+                                        )
                                       }
                                     >
                                       <Shield className="h-4 w-4 mr-2" />
@@ -293,9 +324,9 @@ export const TeamMembersCard = ({
                                     className="flex items-center gap-2 w-full cursor-pointer text-destructive"
                                     onClick={(e) =>
                                       confirmDeleteMember(
-                                        member.id, 
+                                        member.id,
                                         member.userId,
-                                        member.user.name || "this member", 
+                                        member.user.name || "this member",
                                         e
                                       )
                                     }
@@ -341,13 +372,16 @@ export const TeamMembersCard = ({
               Remove Team Member
             </DialogTitle>
             <DialogDescription>
-              This action will remove the member from this team. They will lose access to team resources.
+              This action will remove the member from this team. They will lose
+              access to team resources.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <p>
-              Are you sure you want to remove <span className="font-semibold">{memberToDelete?.name}</span> from this team?
+              Are you sure you want to remove{" "}
+              <span className="font-semibold">{memberToDelete?.name}</span> from
+              this team?
             </p>
           </div>
 

@@ -30,6 +30,8 @@ import {
   getInvitationByToken,
 } from "@/app/lib/actions/invitation";
 import { loginWithInvitation } from "@/app/lib/actions/auth";
+import { createNotification } from "@/app/lib/actions/notifications";
+import { InvitationType } from "@/prisma/types";
 
 const InvitationPage = () => {
   const params = useParams();
@@ -40,7 +42,7 @@ const InvitationPage = () => {
   const [loading, setLoading] = useState(true);
   const [acceptingInvitation, setAcceptingInvitation] = useState(false);
   const [decliningInvitation, setDecliningInvitation] = useState(false);
-  const [invitation, setInvitation] = useState<any>(null);
+  const [invitation, setInvitation] = useState<InvitationType | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const invitationId = params.invitationId as string;
@@ -79,6 +81,18 @@ const InvitationPage = () => {
         teamId || "",
         invitation?.role || "MEMBER"
       );
+
+      toast.success("Invitation accepted successfully");
+
+      // create a notification for the owner of the team
+      if (teamId) {
+        await createNotification({
+          userId: invitation?.invitedById || "",
+          type: "TEAM_MEMBER_ACCEPTED_INVITATION",
+          title: `User ${invitation?.email} has accepted your invitation to join the team ${teamName}`,
+          message: `User ${invitation?.email} has joined the team ${teamName} as ${invitation?.role}.`,
+        });
+      }
     } catch (error) {
       console.error("Error accepting invitation:", error);
       toast.error("An error occurred. Please try again.");
@@ -94,6 +108,17 @@ const InvitationPage = () => {
       try {
         await declineInvitation(invitationId);
         toast.success("Invitation declined");
+
+        // Create a notification for the owner of the team
+        if (invitation?.invitedById) {
+          await createNotification({
+            userId: invitation.invitedById,
+            type: "TEAM_MEMBER_REJECTED_INVITATION",
+            title: `User ${invitation?.email} has declined your invitation to join the team ${teamName}`,
+            message: `User ${invitation?.email} has declined your invitation to join the team ${teamName}.`,
+          });
+        }
+
         router.push("/");
       } catch (err) {
         console.error("Error declining invitation:", err);
@@ -190,7 +215,7 @@ const InvitationPage = () => {
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Team Name:</span>
                   <span className="font-medium">
-                    {teamName || invitation?.teamName || "Unknown Team"}
+                    {teamName || "Unknown Team"}
                   </span>
                 </div>
                 {invitation?.role && (

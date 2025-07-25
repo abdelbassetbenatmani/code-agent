@@ -112,6 +112,7 @@ export const InviteMemberDialog = ({
           teamId: team.id,
           token: invitationId,
           invitedBy: teamDetails?.owner?.name || "",
+          invitedById: teamDetails?.owner?.id || "",
           role: values.role,
         });
 

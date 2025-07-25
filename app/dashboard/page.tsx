@@ -2,7 +2,6 @@ import DashboardContent from "@/components/Dashboard/Content/DashboardContent";
 import { deleteInvitation } from "../lib/actions/invitation";
 import { createTeamMember } from "../lib/actions/teamMember";
 import { auth } from "../lib/auth";
-import { redirect } from "next/navigation";
 import { createNotification } from "../lib/actions/notifications";
 import { getOwnerOfTeam } from "../lib/actions/teams";
 
@@ -46,8 +45,7 @@ const DashboardPage = async ({ searchParams }: DashbaordPageProps) => {
         });
       }
 
-      // redirect to only the dashboard page without search params
-      redirect("/dashboard");
+
     } catch (error) {
       console.error("Error accepting invitation:", error);
     }

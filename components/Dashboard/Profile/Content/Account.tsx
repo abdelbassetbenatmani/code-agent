@@ -47,8 +47,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useSession } from "next-auth/react";
-import { deleteUserProfile, getUserProfile, updateUserProfile } from "@/app/lib/actions/user";
+import {
+  deleteUserProfile,
+  getUserProfile,
+  updateUserProfile,
+} from "@/app/lib/actions/user";
 import { toast } from "sonner";
+import { getUserTeams } from "@/app/lib/actions/teams";
+import { sendNotiificationToMultipleUsers } from "@/app/lib/actions/notifications";
 
 const Account = () => {
   const session = useSession();
@@ -88,15 +94,51 @@ const Account = () => {
     }
   };
 
-  const handleDeleteAccount = async() => {
-    if (confirmDeleteInput === "delete my account") {
-      const deletedUser = await deleteUserProfile(session?.data?.user?.id as string);
-      toast("Account deleted successfully");
-      setIsDeleteDialogOpen(false);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      deletedUser === true && (window.location.href = "/"); // Redirect to home or login page
-    } else {
+  const handleDeleteAccount = async () => {
+    if (confirmDeleteInput !== "delete my account") {
       toast("Please type 'delete my account' to confirm deletion");
+      return;
+    }
+
+    try {
+      const userId = session?.data?.user?.id as string;
+      const userName = session?.data?.user?.name;
+
+      // Fetch teams early
+      const teamsPromise = getUserTeams();
+
+      // Wait for teams and then process notifications
+      const teams = await teamsPromise;
+      const teamOwners = teams.filter((team) => team.name !== "Personal");
+      const userIds = teamOwners.map((owner: any) => owner.ownerId);
+
+      // Send notifications if there are users to notify
+      if (userIds.length > 0) {
+        console.log("Sending notification to team owners:", userIds);
+
+        // No need to block account deletion if notification fails
+        sendNotiificationToMultipleUsers({
+          userIds,
+          type: "TEAM_MEMBER_LEFT",
+          title: "User Account Deleted",
+          message: `The user ${userName} has deleted their account. If you have any questions, please contact support.`,
+        }).catch((err) => {
+          console.error("Failed to send notifications:", err);
+        });
+      }
+
+      // Proceed to delete user profile
+      const deletedUser = await deleteUserProfile(userId);
+      if (deletedUser) {
+        toast("Account deleted successfully");
+        setIsDeleteDialogOpen(false);
+        window.location.href = "/";
+      } else {
+        toast("Failed to delete account");
+      }
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast("An error occurred while deleting the account");
     }
   };
 

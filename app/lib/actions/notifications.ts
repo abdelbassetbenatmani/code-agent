@@ -44,6 +44,8 @@ export async function sendNotiificationToMultipleUsers({
     read: false,
   }));
 
+  console.log("Creating notifications for users:", userIds);
+
   return await prisma.notification.createMany({
     data: notifications,
   });

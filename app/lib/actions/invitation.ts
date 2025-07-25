@@ -10,12 +10,14 @@ export async function addMemberInvitation({
   teamId,
   token,
   invitedBy = "",
+  invitedById,
   role = "member", // Default role is 'member'
 }: {
   email: string;
   teamId: string;
   token?: string; // Optional token, will generate a new one if not provided
   invitedBy: string;
+  invitedById: string; // The ID of the user who sent the invitation
   role: string;
 }) {
   try {
@@ -26,7 +28,8 @@ export async function addMemberInvitation({
         status: "PENDING",
         token: token || uuidv4(), // Generate a new token if not provided
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Set expiresAt to 7 days from now
-        invitedBy, // Store the userId of the person who sent the invitation
+        invitedBy, // Store the username of the person who sent the invitation
+        invitedById, // Store the ID of the user who sent the invitation
         role, // Store the role of the invited user
       },
     });

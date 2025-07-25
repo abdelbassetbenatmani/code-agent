@@ -182,7 +182,8 @@ model Invitation {
   email     String   // The email address of the invited user
   teamId    String
   token     String   @unique
-  invitedBy String // The userId of the person who sent the invitation
+  invitedBy String // The username of the person who sent the invitation
+  invitedById String // The ID of the user who sent the invitation
   role      String   @default("member") // Role of the invited user in the team
   createdAt DateTime @default(now())
   expiresAt DateTime
@@ -223,7 +224,8 @@ enum NotificationType {
   TEAM_MEMBER_JOINED 
   TEAM_MEMBER_LEFT
   TEAM_MEMBER_REMOVED_BY_OWNER
-  TEAM_MEMBER_ADDED
+  TEAM_MEMBER_ACCEPTED_INVITATION
+  TEAM_MEMBER_REJECTED_INVITATION
   TEAM_DELETE
   REPO_DELETE
   REPO_ADD
