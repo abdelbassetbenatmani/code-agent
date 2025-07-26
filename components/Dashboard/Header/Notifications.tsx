@@ -21,6 +21,8 @@ import {
   getNotifications,
   GetNotificationsResponse,
   getUnreadNotificationsCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
 } from "@/app/lib/actions/notifications";
 
 const Notifications = ({ userId }: { userId: string }) => {
@@ -71,15 +73,32 @@ const Notifications = ({ userId }: { userId: string }) => {
   }, [userId, initialized, setNotifications, setUnreadCount]);
 
   // Dummy function to handle marking a notification as read
-  const handleMarkAsRead = (notificationId: string) => {
-    console.log("Marking notification as read:", notificationId);
+  const handleMarkAsRead = async (notificationId: string) => {
+    console.log("Marking notification as read:", unreadCount);
+    await markNotificationAsRead(notificationId);
     markAsRead(notificationId);
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+    setUnreadCount(unreadCount - 1);
   };
 
   // Dummy function to handle marking all notifications as read
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
     console.log("Marking all notifications as read");
+    await markAllNotificationsAsRead(userId);
+    // setNotifications(
+    //   notifications.map((notification) => ({
+    //     ...notification,
+    //     read: true,
+    //   }))
+    // );
     markAllAsRead();
+    setUnreadCount(0);
   };
 
   // Dummy function to load more notifications
@@ -130,9 +149,9 @@ const Notifications = ({ userId }: { userId: string }) => {
           >
             <Bell className="h-5 w-5" />
             {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex h-2 w-2 items-center justify-center rounded-full bg-primary">
+              <span className="absolute right-1.5 top-1.5 flex h-2 w-2 items-center justify-center rounded-full bg-primary text-primary-foreground ">
                 {unreadCount > 9 && (
-                  <span className="absolute flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] text-white">
+                  <span className="absolute flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] ">
                     {unreadCount}
                   </span>
                 )}
