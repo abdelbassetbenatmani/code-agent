@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Check, RefreshCw, Trash2 } from "lucide-react";
+import { Bell, Check } from "lucide-react";
 import { useNotificationStore } from "@/lib/store/notification";
 import NotificationIcon from "@/components/utils/getNotificationIcon";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,7 +30,6 @@ const Notifications = ({ userId }: { userId: string }) => {
     unreadCount,
     markAsRead,
     markAllAsRead,
-    removeNotification,
     setNotifications,
     setUnreadCount,
   } = useNotificationStore();
@@ -38,6 +37,8 @@ const Notifications = ({ userId }: { userId: string }) => {
   // State to track if notifications were loaded
   const [initialized, setInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [notificationPagination, setNotificationPagination] =
+    useState<GetNotificationsResponse | null>(null);
 
   // Load notifications on component mount
   useEffect(() => {
@@ -49,14 +50,16 @@ const Notifications = ({ userId }: { userId: string }) => {
           GetNotificationsResponse,
           number
         ] = await Promise.all([
-          getNotifications({ userId }),
+          getNotifications({ userId, limit: 10 }),
           getUnreadNotificationsCount(userId),
         ]);
 
         setNotifications(notificationsData.notifications);
+        setNotificationPagination(notificationsData);
         setUnreadCount(unreadCount);
 
         setInitialized(true);
+        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -79,24 +82,40 @@ const Notifications = ({ userId }: { userId: string }) => {
     markAllAsRead();
   };
 
-  // Dummy function to refresh notifications
-  const handleRefresh = () => {
-    console.log("Refreshing notifications");
-  };
-
   // Dummy function to load more notifications
-  const handleLoadMore = () => {
-    console.log("Loading more notifications");
-  };
+  const handleLoadMore = async () => {
+    // This would typically fetch more notifications from the server
+    setIsLoading(true);
 
-  // Dummy function to remove a notification
-  const handleRemoveNotification = (
-    notificationId: string,
-    e: React.MouseEvent
-  ) => {
-    e.stopPropagation();
-    console.log("Removing notification:", notificationId);
-    removeNotification(notificationId);
+    try {
+      if (notificationPagination?.pagination.hasMore) {
+        const nextPage = notificationPagination.pagination.page + 1;
+        const newNotificationsData = await getNotifications({
+          userId,
+          page: nextPage,
+          cursor: notificationPagination.pagination.nextCursor || undefined,
+          limit: notificationPagination.pagination.limit,
+        });
+
+        console.log(
+          "Loaded more notifications:",
+          newNotificationsData.notifications
+        );
+
+        setNotifications([
+          ...notifications,
+          ...newNotificationsData.notifications,
+        ]);
+        setNotificationPagination(newNotificationsData);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Error loading more notifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
+
+    console.log("Loading more notifications");
   };
 
   return (
@@ -184,16 +203,6 @@ const Notifications = ({ userId }: { userId: string }) => {
                         >
                           {notification.title}
                         </p>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 shrink-0"
-                          onClick={(e) =>
-                            handleRemoveNotification(notification.id, e)
-                          }
-                        >
-                          <Trash2 className="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" />
-                        </Button>
                       </div>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {notification.message}
@@ -220,9 +229,14 @@ const Notifications = ({ userId }: { userId: string }) => {
                 size="sm"
                 className="w-full text-xs py-2 text-primary hover:text-primary/80"
                 onClick={handleLoadMore}
-                disabled={isLoading}
+                disabled={
+                  notificationPagination?.pagination.hasMore === false ||
+                  isLoading
+                }
               >
-                {isLoading ? "Loading..." : "Load more"}
+                {notificationPagination?.pagination.hasMore === false
+                  ? "No more notifications"
+                  : "Load more"}
               </Button>
             </DropdownMenuGroup>
           ) : (
@@ -237,18 +251,18 @@ const Notifications = ({ userId }: { userId: string }) => {
             </div>
           )}
 
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             className="w-full text-xs text-muted-foreground hover:text-foreground"
             onClick={handleRefresh}
-            disabled={isLoading}
+            disabled={notificationPagination?.pagination.hasMore === false || isLoading}
           >
             <RefreshCw
               className={`mr-2 h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`}
             />
-            {isLoading ? "Refreshing..." : "Refresh notifications"}
-          </Button>
+            {notificationPagination?.pagination.hasMore === false  ? "Refreshing..." : "Refresh notifications"}
+          </Button> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
