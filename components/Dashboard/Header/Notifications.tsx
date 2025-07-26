@@ -91,12 +91,6 @@ const Notifications = ({ userId }: { userId: string }) => {
   const handleMarkAllAsRead = async () => {
     console.log("Marking all notifications as read");
     await markAllNotificationsAsRead(userId);
-    // setNotifications(
-    //   notifications.map((notification) => ({
-    //     ...notification,
-    //     read: true,
-    //   }))
-    // );
     markAllAsRead();
     setUnreadCount(0);
   };
@@ -269,19 +263,6 @@ const Notifications = ({ userId }: { userId: string }) => {
               </p>
             </div>
           )}
-
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-xs text-muted-foreground hover:text-foreground"
-            onClick={handleRefresh}
-            disabled={notificationPagination?.pagination.hasMore === false || isLoading}
-          >
-            <RefreshCw
-              className={`mr-2 h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`}
-            />
-            {notificationPagination?.pagination.hasMore === false  ? "Refreshing..." : "Refresh notifications"}
-          </Button> */}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
